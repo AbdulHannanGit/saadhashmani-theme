@@ -1,0 +1,423 @@
+/* Mobile overrides — loaded via @media in helmet */
+/* Breakpoint: 768px */
+
+/* === GLOBAL === */
+/* Prevent horizontal scroll on all fixed sections */
+[data-sec2], [data-sec3], [data-sec4], [data-sec5], [data-sec6], [data-sec7] {
+  overflow: hidden !important;
+}
+[data-vinner] {
+  overflow-x: hidden !important;
+}
+[data-testi-col] {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: auto !important;
+  height: 340px !important;
+  padding: 6px 0 !important;
+  touch-action: pan-y !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent) !important;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent) !important;
+}
+[data-testi-col][data-side="left"] {
+  top: 50% !important;
+  bottom: auto !important;
+  margin-top: -170px !important;
+}
+[data-testi-col][data-side="right"] {
+  display: none !important;
+}
+[data-testi-track] {
+  display: flex !important;
+  flex-direction: row !important;
+  width: max-content !important;
+}
+[data-testi-card] {
+  width: clamp(280px, 75vw, 380px) !important;
+  flex: none !important;
+  margin-bottom: 0 !important;
+  margin-right: 14px !important;
+  padding: 14px 14px 20px !important;
+  height: auto !important;
+  align-self: flex-start !important;
+}
+[data-testi-card] p {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 9px !important;
+}
+[data-testi-card] div[style*="aspect-ratio"] {
+  display: block !important;
+}
+[data-testi-card] div[style*="width:32px"][style*="height:32px"] {
+  width: 32px !important;
+  height: 32px !important;
+}
+[data-testi-card] div[style*="font-size:14px"] {
+  font-size: 14px !important;
+}
+[data-testi-card] div[style*="font-size:12px"] {
+  font-size: 12px !important;
+}
+[data-testi-card] div[style*="width:26px"][style*="height:26px"] {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 9px !important;
+}
+[data-testi-card] svg {
+  width: 13px !important;
+  height: 13px !important;
+}
+[data-testi-card] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(17,17,18,.82) !important;
+}
+[data-testi-stats] {
+  bottom: 150px !important;
+}
+[data-chat] {
+  flex-wrap: wrap !important;
+  border-radius: 22px !important;
+  padding: 10px !important;
+  gap: 8px !important;
+}
+[data-chat-input] {
+  order: -1 !important;
+  flex-basis: 100% !important;
+  width: 100% !important;
+  padding: 6px 4px !important;
+}
+[data-chat-send] {
+  margin-left: auto !important;
+}
+[data-sec7-footer] {
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  text-align: left !important;
+  gap: 12px !important;
+}
+[data-sec7-footer] > div:first-child {
+  display: block !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+}
+[data-social-links] {
+  display: none !important;
+}
+[data-social-toggle] {
+  display: flex !important;
+}
+[data-pmarquee] {
+  max-width: 100vw !important;
+  overflow: hidden !important;
+}
+
+/* === CURSOR === */
+.vault-cur { cursor: auto !important }
+[data-cur="lens"], [data-cur="dot"] { display: none !important }
+
+/* === HEADER === */
+[data-req] { display: none !important }
+[data-header] img { height: 38px !important }
+
+/* === MENU === */
+[data-menu] > div:nth-child(2) {
+  grid-template-columns: 1fr !important;
+  padding: 72px 20px 28px !important;
+  gap: 20px !important;
+  align-items: stretch !important;
+  overflow-y: auto !important;
+}
+/* Nav: 2-col list */
+[data-menu] nav {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4px 12px !important;
+  order: -1 !important;
+  margin-top: 16px !important;
+}
+[data-menu] nav a[data-menu-link] {
+  gap: 8px !important;
+  padding: 8px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  white-space: nowrap !important;
+  justify-content: flex-start !important;
+}
+[data-menu] nav a[data-menu-link] span:first-child {
+  width: auto !important;
+  font-size: 10px !important;
+}
+[data-menu] nav a[data-menu-link] span:last-child {
+  font-size: 18px !important;
+}
+
+/* Info card: border on top instead of left, center content */
+[data-menu] > div:nth-child(2) > div:last-child {
+  border-left: none !important;
+  border-top: 1px solid var(--line, rgba(255,255,255,.08)) !important;
+  padding-left: 0 !important;
+  padding-top: 20px !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+/* Center the info card text/content */
+[data-menu] > div:nth-child(2) > div:last-child > * {
+  align-items: center !important;
+  text-align: center !important;
+}
+[data-menu] > div:nth-child(2) > div:last-child p {
+  text-align: center !important;
+}
+/* === SECTION 3: VENTURES === */
+/* Make vinner a vertical flow container */
+[data-vinner] {
+  display: flex !important;
+  flex-direction: column !important;
+  position: absolute !important;
+  inset: 0 !important;
+  padding: 68px 16px 70px !important;
+  gap: 14px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+/* All direct children become flow items, center aligned */
+[data-vinner] > div {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  text-align: center !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+/* 1: heading (logo+eyebrow+h2) — order 1 */
+[data-vinner] > div:nth-child(1) {
+  order: 1 !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+[data-vinner] > div:nth-child(1) h2 {
+  font-size: clamp(28px, 8vw, 42px) !important;
+}
+[data-vinner] > div:nth-child(1) img {
+  height: 34px !important;
+}
+/* 2: stats grid — order 2 (below heading) */
+[data-vinner] > div:nth-child(2) {
+  order: 2 !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px 16px !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+[data-vinner] > div:nth-child(2) > div {
+  text-align: center !important;
+}
+[data-vinner] > div:nth-child(2) [style*="font-size:clamp(26px"] {
+  font-size: 20px !important;
+}
+[data-vinner] > div:nth-child(2) [style*="font-size:10px"] {
+  font-size: 9px !important;
+  margin-top: 4px !important;
+}
+/* Space after stats */
+[data-vinner] > div:nth-child(2) {
+  margin-bottom: 12px !important;
+}
+/* 3: desc + CTA — order 3 */
+[data-vinner] > div:nth-child(3) {
+  order: 3 !important;
+  margin-bottom: 50px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+[data-vinner] > div:nth-child(3) p {
+  font-size: 13px !important;
+}
+/* 4: gallery + partners — order 4 */
+[data-vinner] > div:nth-child(4) {
+  order: 4 !important;
+  align-items: center !important;
+  margin-bottom: 60px !important;
+}
+[data-vgallery] {
+  width: 100% !important;
+  align-items: center !important;
+}
+[data-vg-viewport] {
+  width: 100% !important;
+}
+[data-pmarquee] {
+  width: 100% !important;
+}
+
+/* === SECTION 4: PLAYBOOK === */
+/* Mobile: card on top, cluster bottom-sticky semicircle */
+[data-sec4] [data-pb-card] {
+  right: 8px !important;
+  left: 8px !important;
+  width: auto !important;
+  top: 12px !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-height: 44vh !important;
+  overflow-y: auto !important;
+  background: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+/* Video placeholder: smaller 9:16 to fit space */
+[data-sec4] [data-pb-media] {
+  aspect-ratio: 9/16 !important;
+  max-height: 34vh !important;
+  height: auto !important;
+  width: auto !important;
+  margin: 0 auto !important;
+}
+[data-sec4] [data-pb-media-img] {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+[data-sec4] [data-pb-heading] {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+/* Expand button: bottom center of semicircle */
+[data-sec4] [data-pb-expand] {
+  left: 50% !important;
+  top: auto !important;
+  bottom: 16px !important;
+  transform: translateX(-50%) !important;
+}
+/* Cluster: semicircle in sticky mode, horizontal drag only */
+[data-sec4] [data-pb-cluster] {
+  touch-action: pan-y !important;
+}
+
+/* === SECTION 5: PODCAST === */
+[data-pod-ring] {
+  touch-action: pan-y !important;
+}
+[data-pod-card] {
+  width: clamp(76px, 20vw, 108px) !important;
+  height: clamp(112px, 28vw, 154px) !important;
+  border-radius: 10px !important;
+}
+[data-pod-stage] {
+  top: calc(clamp(48px, 6vh, 86px) + 20px) !important;
+}
+[data-pod-desc] {
+  white-space: normal !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+[data-pod-speed] {
+  order: -1 !important;
+}
+/* Big number watermark — hide on mobile */
+[data-sec3] [data-vslide] > div:nth-child(2) {
+  display: none !important;
+}
+/* Radial gradient overlay — keep but lighten */
+[data-sec3] [data-vslide] > div:first-child {
+  z-index: 0 !important;
+}
+/* Nav: left bottom, vertical like desktop but smaller */
+[data-sec3] h2 {
+  margin-bottom: 50px !important;
+}
+[data-sec3] > div:last-child {
+  left: 16px !important;
+  top: auto !important;
+  bottom: 46px !important;
+  transform: none !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  z-index: 5 !important;
+  gap: 12px !important;
+}
+[data-sec3] > div:last-child > div {
+  display: none !important;
+}
+[data-sec3] [data-vcur] {
+  display: flex !important;
+  align-items: center !important;
+}
+[data-sec3] [data-vprev] svg,
+[data-sec3] [data-vnext] svg {
+  transform: rotate(-90deg) !important;
+}
+[data-sec3] [data-vdot] {
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+[data-sec3] [data-vdot] [data-vdot-l] {
+  order: 0 !important;
+}
+[data-sec3] [data-vdot] [data-vdot-n] {
+  font-size: 10px !important;
+}
+/* Hide inactive dots, show only active */
+[data-sec3] [data-vdot] {
+  display: none !important;
+}
+[data-sec3] [data-vprev],
+[data-sec3] [data-vnext] {
+  width: 50px !important;
+  height: 50px !important;
+}
+[data-sec3] [data-vprev] svg,
+[data-sec3] [data-vnext] svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+/* === SECTION 2: TIMELINE === */
+/* Remove left/right edge shadows */
+[data-tl-viewport] {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+/* Hide the gradient overlay divs */
+[data-tl] > div > div[style*="linear-gradient(90deg"] {
+  display: none !important;
+}
+[data-tl] > div > div[style*="linear-gradient(270deg"] {
+  display: none !important;
+}
+
+/* === TIMELINE MODAL (mobile): image top, content bottom === */
+[data-tl-modal-card] {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 40vh 1fr !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+[data-tl-modal] {
+  padding: 0 !important;
+}
+[data-tl-modal-close] {
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 10 !important;
+}
