@@ -7,6 +7,12 @@ function sh_defaults() {
             'custom_cursor'     => true,
             'animations'        => true,
             'preloader'         => true,
+            'preloader_assets'  => [
+                'logo'    => true,
+                'video'   => true,
+                'poster'  => true,
+                'gallery' => true,
+            ],
             'video_quality'     => '720p',
             'mobile_video_quality' => '480p',
             'logo'              => 0,

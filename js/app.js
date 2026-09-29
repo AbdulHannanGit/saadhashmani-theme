@@ -11,7 +11,8 @@ var _opts = _sh.options || {};
 var _contact = _sh.contact || {};
 
 var _isMobile = window.innerWidth < 768;
-var self = { props: { videoQuality: (_isMobile ? _opts.mobile_video_quality : _opts.video_quality) || "720p", customCursor: _opts.custom_cursor !== false, preloader: _opts.preloader !== false } };
+var _preAssets = _opts.preloader_assets || {};
+var self = { props: { videoQuality: (_isMobile ? _opts.mobile_video_quality : _opts.video_quality) || "720p", customCursor: _opts.custom_cursor !== false, preloader: _opts.preloader !== false, preloaderAssets: { logo: _preAssets.logo !== false && _preAssets.logo !== '0' && _preAssets.logo !== 0, video: _preAssets.video !== false && _preAssets.video !== '0' && _preAssets.video !== 0, poster: _preAssets.poster !== false && _preAssets.poster !== '0' && _preAssets.poster !== 0, gallery: _preAssets.gallery !== false && _preAssets.gallery !== '0' && _preAssets.gallery !== 0 } } };
 Object.assign(self, {_enterHomeScroll:_enterHomeScroll,_exitHomeScroll:_exitHomeScroll,_glideHomeScrollBack:_glideHomeScrollBack,_isPodCenter:_isPodCenter,_updateHomeScroll:_updateHomeScroll,addHovers:addHovers,animPbEnter:animPbEnter,animPodEnter:animPodEnter,animSec2Enter:animSec2Enter,animTestiEnter:animTestiEnter,applyCurStyle:applyCurStyle,applyCursorPref:applyCursorPref,applyHeroFont:applyHeroFont,applyQuality:applyQuality,bindArrow:bindArrow,bindKeys:bindKeys,bindMenu:bindMenu,bootContent:bootContent,buildChat:buildChat,buildCollage:buildCollage,buildGallery:buildGallery,buildPlaybook:buildPlaybook,buildPods:buildPods,buildTestis:buildTestis,buildTimeline:buildTimeline,buildVentures:buildVentures,chatAsk:chatAsk,chatRestart:chatRestart,chatSend:chatSend,classifyCur:classifyCur,closePod:closePod,closeTesti:closeTesti,componentDidUpdate:componentDidUpdate,csvCell:csvCell,disableCursor:disableCursor,enableCursor:enableCursor,enterHead:enterHead,exitHead:exitHead,exitLoopCleanup:exitLoopCleanup,fillPbCard:fillPbCard,finishPreloader:finishPreloader,goTo:goTo,goToIndex:goToIndex,handle:handle,handleLoopback:handleLoopback,headOpacity:headOpacity,headScramble:headScramble,heroIntro:heroIntro,hidePbHoverPreview:hidePbHoverPreview,highlightCenterTlItem:highlightCenterTlItem,hitHeading:hitHeading,init:init,initCursor:initCursor,isMobile:isMobile,layout:layout,layoutPb:layoutPb,loadDepsThenScroll:loadDepsThenScroll,loadStageVideo:loadStageVideo,loopClipA:loopClipA,loopRangeFor:loopRangeFor,makePlaybook:makePlaybook,nearestPodTarget:nearestPodTarget,nearestRot:nearestRot,next:next,openPbVideoFullscreen:openPbVideoFullscreen,openPod:openPod,openTesti:openTesti,playPod:playPod,playTransition:playTransition,positionPods:positionPods,postSubmission:postSubmission,preScrambleRAF:preScrambleRAF,preload:preload,prev:prev,primeLoops:primeLoops,pushChat:pushChat,readY:readY,renderChatLog:renderChatLog,renderFrame:renderFrame,resetToHome:resetToHome,rgba:rgba,runHomeReturn:runHomeReturn,runPreloader:runPreloader,saveSubmission:saveSubmission,scrambleLogo:scrambleLogo,scrollToLastSection:scrollToLastSection,seekTo:seekTo,segAt:segAt,selectTopic:selectTopic,setChatPlusMode:setChatPlusMode,setHeadEl:setHeadEl,setLoopLabel:setLoopLabel,setMenu:setMenu,setPbMode:setPbMode,setQuality:setQuality,setTestiPlat:setTestiPlat,setVenture:setVenture,setupCursorEditGuard:setupCursorEditGuard,showHeader:showHeader,showPbHoverPreview:showPbHoverPreview,snapTlToCenter:snapTlToCenter,startScroll:startScroll,step3Q:step3Q,tickArrowMagnet:tickArrowMagnet,tickCollage:tickCollage,tickCursor:tickCursor,tickIdleLoop:tickIdleLoop,tickMenu:tickMenu,tickOne:tickOne,tickPlaybook:tickPlaybook,tickPods:tickPods,tickTestis:tickTestis,toggleMenu:toggleMenu,transRangeFor:transRangeFor,triggerHomeReturn:triggerHomeReturn,updateArrow:updateArrow,updateHeaderVis:updateHeaderVis,updateHero:updateHero,updatePb:updatePb,updatePodInfo:updatePodInfo,updateSection2:updateSection2,updateSection4:updateSection4,updateSection5:updateSection5,updateSection6:updateSection6,updateSection7:updateSection7,updateVentures:updateVentures,urlProp:urlProp,wireSocialPopup:wireSocialPopup,wireTimelineDrag:wireTimelineDrag,wireTimelineModal:wireTimelineModal});
 function init() {
     self.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -527,10 +528,11 @@ function runPreloader() {
 
 function preload() {
     var imgTask = function(src) { return new Promise(function(res) { if (!src) return res(); var im = new Image(); im.onload = im.onerror = function() { res(); }; im.decoding = 'async'; im.src = src; setTimeout(res, 7000); }); };
+    var pa = self.props.preloaderAssets;
     var tasks = [];
     try {
-      if (_hero.logo_url) tasks.push(imgTask(_hero.logo_url));
-      if (self.stageVideo) tasks.push(new Promise(function(res) {
+      if (pa.logo && _hero.logo_url) tasks.push(imgTask(_hero.logo_url));
+      if (pa.video && self.stageVideo) tasks.push(new Promise(function(res) {
         var v = self.stageVideo;
         if (v.readyState >= 3) return res();
         var cb = function() { v.removeEventListener('canplay', cb); v.removeEventListener('canplaythrough', cb); v.removeEventListener('error', cb); res(); };
@@ -540,10 +542,12 @@ function preload() {
         try { v.preload = 'auto'; v.load(); } catch (e) {}
         setTimeout(cb, 9000);
       }));
-      if (_hero.poster_url) tasks.push(imgTask(_hero.poster_url));
-      var venData = _sec.ventures || [];
-      if (venData.length > 0 && venData[0].gallery_thumbs) {
-        venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
+      if (pa.poster && _hero.poster_url) tasks.push(imgTask(_hero.poster_url));
+      if (pa.gallery) {
+        var venData = _sec.ventures || [];
+        if (venData.length > 0 && venData[0].gallery_thumbs) {
+          venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
+        }
       }
     } catch (e) {}
     var total = tasks.length; var loaded = 0;
@@ -997,10 +1001,12 @@ function wireTimelineModal() {
 function buildPlaybook() {
     const principleTopics = (_sec.playbook && _sec.playbook.principles) || [];
     const videoTopics = (_sec.playbook && _sec.playbook.reels) || [];
-    for (let i = principleTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = principleTopics[i]; principleTopics[i] = principleTopics[j]; principleTopics[j] = t; }
-    const hiddenTopics = principleTopics.slice(0, 16);
-    hiddenTopics.forEach(p => { p.open = false; p.img = videoTopics[Math.floor(Math.random() * videoTopics.length)].img; p.embed = null; });
-    self.pbTopics = videoTopics.concat(hiddenTopics);
+    videoTopics.forEach(r => { r.open = true; });
+    var closedPrinciples = principleTopics.filter(p => !p.open);
+    var openPrinciples = principleTopics.filter(p => p.open);
+    closedPrinciples.forEach(p => { p.img = videoTopics.length ? videoTopics[Math.floor(Math.random() * videoTopics.length)].img : ''; p.embed = null; });
+    openPrinciples.forEach(p => { if (!p.img) p.img = videoTopics.length ? videoTopics[Math.floor(Math.random() * videoTopics.length)].img : ''; if (!p.embed) p.embed = null; });
+    self.pbTopics = videoTopics.concat(openPrinciples, closedPrinciples);
     self.pbs = [];
     for (let i = self.pbTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = self.pbTopics[i]; self.pbTopics[i] = self.pbTopics[j]; self.pbTopics[j] = t; }
     if (self.sec4) self.pbs.push(self.makePlaybook(self.sec4, 3));

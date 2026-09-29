@@ -46,6 +46,26 @@ $color_tips = [
     </label>
 </div>
 
+<!-- Preloader Assets -->
+<?php $pa = $o['preloader_assets'] ?? sh_defaults()['options']['preloader_assets']; ?>
+<div class="sh-field" style="margin-left:24px;margin-top:-6px">
+    <p class="description" style="margin-bottom:6px">Assets to preload before showing the page:</p>
+    <?php
+    $asset_labels = [
+        'logo'    => ['Logo image', 'Preloads the hero logo so it appears instantly.'],
+        'video'   => ['Background video', 'Preloads the stage video for smooth playback on entry. Heaviest asset.'],
+        'poster'  => ['Video poster', 'Preloads the poster frame shown before video starts.'],
+        'gallery' => ['Gallery thumbnails', 'Preloads first venture gallery thumbs for the carousel.'],
+    ];
+    foreach ($asset_labels as $key => $info): ?>
+        <label style="display:block;margin-bottom:4px">
+            <input type="hidden" name="sh[options][preloader_assets][<?php echo $key; ?>]" value="0">
+            <input type="checkbox" name="sh[options][preloader_assets][<?php echo $key; ?>]" value="1" <?php checked(!empty($pa[$key])); ?>>
+            <?php echo esc_html($info[0]); ?> <span class="sh-tooltip" data-tip="<?php echo esc_attr($info[1]); ?>">&#8505;</span>
+        </label>
+    <?php endforeach; ?>
+</div>
+
 <!-- Animations -->
 <div class="sh-field">
     <label>
