@@ -92,16 +92,8 @@ function init() {
   }
 
 function bootContent() {
-    self.buildTimeline();
-    self.buildPlaybook();
-    self.buildVentures();
-    self.buildGallery();
-    self.buildPods();
-    self.buildTestis();
-    self.buildChat();
-    self.wireSocialPopup();
-    self.buildCollage();
-    self.addHovers();
+    var builders = [self.buildTimeline, self.buildPlaybook, self.buildVentures, self.buildGallery, self.buildPods, self.buildTestis, self.buildChat, self.wireSocialPopup, self.buildCollage, self.addHovers];
+    builders.forEach(function(fn) { try { fn(); } catch (e) { console.error(fn.name + ' error:', e); } });
     self.loadDepsThenScroll();
   }
 
