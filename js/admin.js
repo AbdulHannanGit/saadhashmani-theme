@@ -181,44 +181,128 @@
         reader.readAsText(file);
     });
 
-    // ── Demo Media Importer ──
+    // ── Demo Media Importer (batched) ──
+    function logLine($log, text, type) {
+        var colors = { ok: '#00a32a', fail: '#d63638', skip: '#dba617', info: '#50575e', done: '#1d2327' };
+        $log.append('<div style="color:' + (colors[type] || colors.info) + '">' + $('<span>').text(text).html() + '</div>');
+        $log.scrollTop($log[0].scrollHeight);
+    }
+
     $('#sh-demo-import').on('click', function () {
-        if (typeof shAdmin === 'undefined') { alert('Admin script not loaded. Please reload the page.'); return; }
-        var url = $('#sh-demo-url').val().trim();
-        if (!url) { alert('Enter a manifest URL first.'); return; }
+        if (typeof shAdmin === 'undefined') { alert('Admin script not loaded. Reload the page.'); return; }
+        var manifestUrl = $('#sh-demo-url').val().trim();
+        if (!manifestUrl) { alert('Enter a manifest URL first.'); return; }
         if (!confirm('This will replace all current media in theme settings with demo media. Continue?')) return;
 
         var $btn = $(this), $spinner = $('#sh-demo-spinner'), $log = $('#sh-demo-log');
         $btn.prop('disabled', true);
         $spinner.addClass('is-active');
-        $log.show().html('<div>Starting import... This may take several minutes.</div>');
+        $log.show().empty();
+        logLine($log, 'Fetching manifest...', 'info');
 
-        $.ajax({
-            url: shAdmin.ajaxUrl,
-            type: 'POST',
-            timeout: 600000,
-            data: {
-                action: 'sh_demo_import',
-                nonce: shAdmin.nonce,
-                manifest_url: url
+        $.ajax({ url: manifestUrl, dataType: 'json', timeout: 30000 }).fail(function () {
+            logLine($log, 'Failed to fetch manifest. Check the URL.', 'fail');
+            $btn.prop('disabled', false); $spinner.removeClass('is-active');
+        }).done(function (manifest) {
+            if (!manifest || !manifest.files || !manifest.files.length) {
+                logLine($log, 'Invalid manifest — no files found.', 'fail');
+                $btn.prop('disabled', false); $spinner.removeClass('is-active');
+                return;
             }
-        }).done(function (res) {
-            if (res.success && res.data.log) {
-                var html = res.data.log.map(function (line) {
-                    var color = line.indexOf('FAILED') === 0 ? '#d63638' : line.indexOf('Imported') === 0 ? '#00a32a' : '#50575e';
-                    return '<div style="color:' + color + '">' + $('<span>').text(line).html() + '</div>';
-                }).join('');
-                html += '<div style="color:#1d2327;margin-top:8px;font-weight:bold">Done — ' + res.data.imported + ' files imported. Reload to see changes.</div>';
-                $log.html(html);
-            } else {
-                $log.html('<div style="color:#d63638">Error: ' + (res.data || 'Unknown error') + '</div>');
+
+            var files = manifest.files;
+            var baseUrl = manifest.base_url || '';
+            var settingsMap = manifest.settings_map || {};
+            var batchSize = 5;
+            var totalFiles = files.length;
+            var imported = 0, skipped = 0, failed = 0;
+            var allIdMap = {};
+            var batchIndex = 0;
+
+            logLine($log, totalFiles + ' files to process in batches of ' + batchSize + '...', 'info');
+
+            function nextBatch() {
+                if (batchIndex >= totalFiles) {
+                    applySettings();
+                    return;
+                }
+                var batch = files.slice(batchIndex, batchIndex + batchSize);
+                var batchNum = Math.floor(batchIndex / batchSize) + 1;
+                var totalBatches = Math.ceil(totalFiles / batchSize);
+                logLine($log, 'Batch ' + batchNum + '/' + totalBatches + ' (' + batch.length + ' files)...', 'info');
+                batchIndex += batchSize;
+
+                $.ajax({
+                    url: shAdmin.ajaxUrl,
+                    type: 'POST',
+                    timeout: 180000,
+                    data: {
+                        action: 'sh_demo_import_batch',
+                        nonce: shAdmin.nonce,
+                        base_url: baseUrl,
+                        files: JSON.stringify(batch)
+                    }
+                }).done(function (res) {
+                    if (res.success) {
+                        (res.data.log || []).forEach(function (line) {
+                            var type = 'info';
+                            if (line.indexOf('Imported') === 0) { type = 'ok'; imported++; }
+                            else if (line.indexOf('Exists') === 0) { type = 'skip'; skipped++; }
+                            else if (line.indexOf('FAILED') === 0) { type = 'fail'; failed++; }
+                            logLine($log, line, type);
+                        });
+                        $.extend(allIdMap, res.data.id_map || {});
+                    } else {
+                        logLine($log, 'Batch error: ' + (res.data || 'Unknown'), 'fail');
+                        failed += batch.length;
+                    }
+                    nextBatch();
+                }).fail(function (xhr, status) {
+                    logLine($log, 'Batch request failed: ' + (status === 'timeout' ? 'timeout' : xhr.statusText), 'fail');
+                    failed += batch.length;
+                    nextBatch();
+                });
             }
-        }).fail(function (xhr, status) {
-            var msg = status === 'timeout' ? 'Request timed out. The import may still be running — check Media Library.' : 'Request failed: ' + xhr.statusText;
-            $log.html('<div style="color:#d63638">' + msg + '</div>');
-        }).always(function () {
-            $btn.prop('disabled', false);
-            $spinner.removeClass('is-active');
+
+            function applySettings() {
+                if (!Object.keys(allIdMap).length) {
+                    logLine($log, 'No files were imported — settings unchanged.', 'fail');
+                    finish();
+                    return;
+                }
+                logLine($log, 'Applying ' + Object.keys(allIdMap).length + ' media references to settings...', 'info');
+                $.ajax({
+                    url: shAdmin.ajaxUrl,
+                    type: 'POST',
+                    timeout: 30000,
+                    data: {
+                        action: 'sh_demo_apply_map',
+                        nonce: shAdmin.nonce,
+                        settings_map: JSON.stringify(settingsMap),
+                        id_map: JSON.stringify(allIdMap)
+                    }
+                }).done(function (res) {
+                    if (res.success) {
+                        logLine($log, 'Settings updated with ' + res.data.applied + ' references.', 'ok');
+                    } else {
+                        logLine($log, 'Failed to update settings: ' + (res.data || 'Unknown'), 'fail');
+                    }
+                    finish();
+                }).fail(function () {
+                    logLine($log, 'Settings update request failed.', 'fail');
+                    finish();
+                });
+            }
+
+            function finish() {
+                var summary = 'Done — ' + imported + ' imported, ' + skipped + ' already existed, ' + failed + ' failed.';
+                logLine($log, summary, 'done');
+                if (imported > 0) logLine($log, 'Reload the page to see changes.', 'done');
+                $btn.prop('disabled', false);
+                $spinner.removeClass('is-active');
+            }
+
+            nextBatch();
         });
     });
 

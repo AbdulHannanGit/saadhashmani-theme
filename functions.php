@@ -131,73 +131,93 @@ function sh_contact_submit() {
 add_action('wp_ajax_sh_contact', 'sh_contact_submit');
 add_action('wp_ajax_nopriv_sh_contact', 'sh_contact_submit');
 
-function sh_demo_import() {
+function sh_demo_import_batch() {
     check_ajax_referer('sh_settings_nonce', 'nonce');
     if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
 
-    $manifest_url = esc_url_raw($_POST['manifest_url'] ?? '');
-    if (empty($manifest_url)) wp_send_json_error('No manifest URL');
-
-    $response = wp_remote_get($manifest_url, ['timeout' => 30]);
-    if (is_wp_error($response)) wp_send_json_error('Failed to fetch manifest: ' . $response->get_error_message());
-
-    $manifest = json_decode(wp_remote_retrieve_body($response), true);
-    if (!is_array($manifest) || empty($manifest['files'])) wp_send_json_error('Invalid manifest');
-
-    @set_time_limit(600);
-
-    $base_url = $manifest['base_url'] ?? '';
-    $settings = get_option('sh_settings', []);
-    if (!is_array($settings)) $settings = [];
-    $log = [];
-    $id_map = [];
+    @set_time_limit(120);
 
     require_once ABSPATH . 'wp-admin/includes/media.php';
     require_once ABSPATH . 'wp-admin/includes/file.php';
     require_once ABSPATH . 'wp-admin/includes/image.php';
 
-    foreach ($manifest['files'] as $file) {
-        $url = $base_url . $file['path'];
-        $log[] = 'Downloading: ' . $file['path'];
+    $base_url = sanitize_url($_POST['base_url'] ?? '');
+    $files    = json_decode(stripslashes($_POST['files'] ?? '[]'), true);
+    if (!is_array($files) || empty($files)) wp_send_json_error('No files in batch');
 
-        $tmp = download_url($url, 60);
-        if (is_wp_error($tmp)) {
-            $log[] = 'FAILED: ' . $tmp->get_error_message();
+    $log = [];
+    $id_map = [];
+
+    foreach ($files as $file) {
+        $filename = basename($file['path']);
+
+        $existing = get_posts([
+            'post_type'   => 'attachment',
+            'post_status' => 'inherit',
+            'meta_key'    => '_wp_attached_file',
+            'meta_value'  => $filename,
+            'meta_compare' => 'LIKE',
+            'posts_per_page' => 1,
+            'fields' => 'ids',
+        ]);
+        if (!empty($existing)) {
+            $id_map[$file['key']] = $existing[0];
+            $log[] = 'Exists: ' . $filename . ' → ID ' . $existing[0];
             continue;
         }
 
-        $file_array = [
-            'name'     => basename($file['path']),
-            'tmp_name' => $tmp,
-        ];
+        $url = $base_url . $file['path'];
+        $tmp = download_url($url, 90);
+        if (is_wp_error($tmp)) {
+            $log[] = 'FAILED: ' . $filename . ' — ' . $tmp->get_error_message();
+            continue;
+        }
 
-        $att_id = media_handle_sideload($file_array, 0, $file['title'] ?? '');
+        $att_id = media_handle_sideload([
+            'name'     => $filename,
+            'tmp_name' => $tmp,
+        ], 0, $file['title'] ?? '');
+
         if (is_wp_error($att_id)) {
-            $log[] = 'FAILED to import: ' . $att_id->get_error_message();
+            $log[] = 'FAILED: ' . $filename . ' — ' . $att_id->get_error_message();
             @unlink($tmp);
             continue;
         }
 
         $id_map[$file['key']] = $att_id;
-        $log[] = 'Imported: ' . $file['path'] . ' → ID ' . $att_id;
+        $log[] = 'Imported: ' . $filename . ' → ID ' . $att_id;
     }
 
-    if (!empty($manifest['settings_map']) && !empty($id_map)) {
-        foreach ($manifest['settings_map'] as $dot_path => $file_key) {
-            if (!isset($id_map[$file_key])) continue;
-            $keys = explode('.', $dot_path);
-            $ref = &$settings;
-            foreach ($keys as $k) {
-                if (!isset($ref[$k])) $ref[$k] = [];
-                $ref = &$ref[$k];
-            }
-            $ref = $id_map[$file_key];
-            unset($ref);
-        }
-        update_option('sh_settings', $settings);
-        $log[] = 'Settings updated with ' . count($id_map) . ' media references.';
-    }
-
-    wp_send_json_success(['log' => $log, 'imported' => count($id_map)]);
+    wp_send_json_success(['log' => $log, 'id_map' => $id_map]);
 }
-add_action('wp_ajax_sh_demo_import', 'sh_demo_import');
+add_action('wp_ajax_sh_demo_import_batch', 'sh_demo_import_batch');
+
+function sh_demo_apply_map() {
+    check_ajax_referer('sh_settings_nonce', 'nonce');
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+    $settings_map = json_decode(stripslashes($_POST['settings_map'] ?? '{}'), true);
+    $id_map       = json_decode(stripslashes($_POST['id_map'] ?? '{}'), true);
+    if (!is_array($settings_map) || !is_array($id_map)) wp_send_json_error('Invalid data');
+
+    $settings = get_option('sh_settings', []);
+    if (!is_array($settings)) $settings = [];
+
+    $applied = 0;
+    foreach ($settings_map as $dot_path => $file_key) {
+        if (!isset($id_map[$file_key])) continue;
+        $keys = explode('.', $dot_path);
+        $ref = &$settings;
+        foreach ($keys as $k) {
+            if (!isset($ref[$k])) $ref[$k] = [];
+            $ref = &$ref[$k];
+        }
+        $ref = (int) $id_map[$file_key];
+        unset($ref);
+        $applied++;
+    }
+
+    update_option('sh_settings', $settings);
+    wp_send_json_success(['applied' => $applied]);
+}
+add_action('wp_ajax_sh_demo_apply_map', 'sh_demo_apply_map');
