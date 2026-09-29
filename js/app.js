@@ -4,8 +4,13 @@
 var SH_ASSETS = (window.shTheme && window.shTheme.assetUrl) || '';
 function assetImg(path) { return SH_ASSETS ? SH_ASSETS + 'images/' + path : 'uploads/' + path; }
 function assetVid(path) { return SH_ASSETS ? SH_ASSETS + 'video/' + path : 'uploads/' + path; }
+var _sh = window.shTheme || {};
+var _sec = _sh.sections || {};
+var _hero = _sh.hero || {};
+var _opts = _sh.options || {};
+var _contact = _sh.contact || {};
 
-var self = { props: { videoQuality: "720p", customCursor: true } };
+var self = { props: { videoQuality: _opts.video_quality || "720p", customCursor: _opts.custom_cursor !== false } };
 function init() {
     self.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const gate = document.querySelector('[data-gate]');
@@ -43,7 +48,7 @@ function init() {
     self.N = 7;                 // 7 rest sections, 6 transitions
     self.LOOP_T = [[0, 6.0], [11.8, 17.9], [24.0, 30.0], [36.1, 42.1], [48.1, 54.2], [62.3, 68.4]];
     self.TRANS_T = [[6.0, 11.8], [17.9, 24.0], [30.0, 36.1], [42.1, 48.1], [54.2, 62.3], [68.4, 72.5]];
-    self.qualitySrc = { '480p': assetVid('full-video-480p.mp4'), '720p': assetVid('full-video-720p.mp4'), '1080p': assetVid('full-video-1080p.mp4') };
+    self.qualitySrc = { '480p': _hero.video_480 || assetVid('full-video-480p.mp4'), '720p': _hero.video_720 || assetVid('full-video-720p.mp4'), '1080p': _hero.video_1080 || assetVid('full-video-1080p.mp4') };
 
     // quality: '480p' / '720p' (default) / '1080p'. localStorage lets the
     // on-page toggle persist; falls back to the Tweaks prop default.
@@ -101,6 +106,7 @@ function isMobile() { return window.innerWidth <= 768; }
 
 function initCursor() {
     if (self._curOn) return;
+    if (_opts.custom_cursor === false) return;
     const fine = window.matchMedia('(pointer:fine)').matches;
     if (!fine || self.reduced || self.isMobile()) return;
     self._curOn = true;
@@ -521,8 +527,7 @@ function preload() {
     const imgTask = (src) => new Promise((res) => { const im = new Image(); im.onload = im.onerror = () => res(); im.decoding = 'async'; im.src = src; setTimeout(res, 7000); });
     const tasks = [];
     // Priority 0 - the logo mark, since it renders above the fold in the header immediately.
-    tasks.push(imgTask(assetImg('Saad Hashmani Logo.webp')));
-    // Priority 1 - the merged stage video, so scrolling never stalls.
+    if (_hero.logo_url) tasks.push(imgTask(_hero.logo_url));
     if (self.stageVideo) tasks.push(new Promise((res) => {
       const v = self.stageVideo;
       if (v.readyState >= 3) return res();
@@ -533,10 +538,11 @@ function preload() {
       try { v.preload = 'auto'; v.load(); } catch (e) {}
       setTimeout(done, 9000);
     }));
-    // Priority 2 - hero poster still.
-    tasks.push(imgTask(assetVid('st1.webp')));
-    // Priority 4 - first few venture-carousel images (slides 1/2 open on scroll shortly after hero).
-    ['Tradingpapa-images (1).webp', 'Tradingpapa-images (2).webp'].forEach((f) => tasks.push(imgTask('uploads/' + f)));
+    if (_hero.poster_url) tasks.push(imgTask(_hero.poster_url));
+    var venData = _sec.ventures || [];
+    if (venData.length > 0 && venData[0].gallery_thumbs) {
+      venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
+    }
     const total = tasks.length; let done = 0;
     self._preMinUntil = performance.now() + 5000;
     return new Promise((resolve) => {
@@ -712,17 +718,7 @@ function buildTimeline() {
     self.tlModal = self.root.querySelector('[data-tl-modal]');
     if (!self.tlTrack) return;
 
-    const img = (f) => assetImg(f);
-    let M = [
-      { y: '1989-2008', t: 'Karachi Roots', tag: 'Origin', img: img('2008.webp'), d: 'Born in Karachi to a middle-class family that taught him early that "without education there is no way out." A tough school transfer became the fire behind a lifelong work ethic, and in 2008 he enrolled in mechanical engineering at NED University.' },
-      { y: '2010-2013', t: 'A New Country', tag: 'Foundation', img: img('2010.webp'), d: 'After 12 US visa rejections and one from the UK, the family finally emigrated to Texas, arriving with no house, no car, and no career. While studying engineering at Texas Tech, he built a first business from scratch: an eBay reselling operation that reached Top Rated Seller status before a brand dispute forced him to pivot to reselling used electronics door to door.' },
-      { y: '2014-2015', t: 'The Phone Guys', tag: 'Operator', img: img('2015 (2).webp'), d: 'Left engineering unfinished at the end of 2013 despite a strong GPA, driving home overnight to start over. Opened his first retail store, The Phone Guys, then a second in Austin. Both ran at a loss for years while he lived frugally, saving and reinvesting every dollar.' },
-      { y: 2016, t: 'The Breakthrough', tag: 'Growth', img: img('2016.webp'), d: 'A franchise partnership turned the business around, the deal famously closed over a steak dinner in a rented suit and a rented car. The win opened the door to real estate expansion alongside a growing retail footprint across Texas.' },
-      { y: 2021, t: 'Rebuilding From Zero', tag: 'Resilience', img: img('20211.webp'), d: 'Everything he had built fell, from 100% to 40%. What followed was roughly two and a half years of genuine, unglamorous rebuilding, grounded this time in a decade of real operating experience rather than appearances.' },
-      { y: 2024, t: 'Sharing The Knowledge', tag: 'Education', img: img('2024.webp'), d: 'Launched The H University, a free skills and e-commerce education platform for aspiring entrepreneurs, funded out of pocket with a personal $100,000 investment and no donations taken.' },
-      { y: 2025, t: 'Market Education', tag: 'Trading', img: img('2025.webp'), d: 'Launched Trading Papa, a crypto and forex education platform built on a $300,000 investment, extending the mission from business skills to financial markets with free signals and live coaching.' },
-      { y: 2026, t: 'Backing The Next Generation', tag: 'Investing', img: img('2026.webp'), d: 'The H University surpassed 400,000 students. Now putting his own capital, banking relationships, and audience behind an SME investment collaboration to help fund and build the next wave of entrepreneurs.' }
-    ];
+    let M = (_sec.timeline && _sec.timeline.length) ? _sec.timeline : [];
     self.tlData = M;
 
     const STEP = 202, PAD = 84, BY = 214;
@@ -992,33 +988,8 @@ function wireTimelineModal() {
   }
 
 function buildPlaybook() {
-    const principleTopics = [{"t":"Back the founder before the idea","open":true,"d":"Markets change and ideas evolve. The founder's ability to adapt, learn, and execute is what creates lasting value."},{"t":"Read people, not presentations","open":true,"d":"A pitch deck shows preparation. A conversation reveals conviction, honesty, and the ability to handle pressure."},{"t":"Execution beats prediction","open":true,"d":"The best opportunities are discovered by people who consistently execute, test, and improve."},{"t":"Capital follows clarity","open":true,"d":"Investors do not just fund ideas. They fund founders who understand the problem, customer, and path forward."},{"t":"Think in decades, not quarters","open":true,"d":"Great businesses are built through patience, discipline, and decisions that compound over time."},{"t":"The first customer teaches everything","open":true,"d":"Real market feedback is more valuable than assumptions made inside a room."},{"t":"Solve painful problems","open":true,"d":"The strongest companies are built around problems people urgently want solved."},{"t":"Distribution creates advantage","open":true,"d":"A great product without reach remains invisible. Winning companies understand how customers discover them."},{"t":"Build systems, not dependence","open":true,"d":"A business becomes valuable when processes work beyond one person's effort."},{"t":"Protect your reputation","open":true,"d":"Trust compounds faster than money. Every interaction becomes part of your long-term asset."},{"t":"Speed matters in uncertainty","open":true,"d":"You rarely have perfect information. Strong operators make decisions, learn quickly, and adjust."},{"t":"Stay close to the customer","open":true,"d":"The market always speaks. Successful founders listen before they build."},{"t":"Technology is leverage","open":true,"d":"AI and emerging tools create opportunities, but only when combined with strong execution."},{"t":"Ownership creates responsibility","open":true,"d":"The best builders think like owners because they understand every decision has consequences."},{"t":"Learn before you scale","open":true,"d":"Growth without understanding creates bigger problems. Master the fundamentals first."},{"t":"Build relationships before you need them","open":true,"d":"The strongest networks are created through genuine value, not last-minute requests."},{"t":"Choose discipline over motivation","open":true,"d":"Motivation changes. Systems, habits, and consistency create progress."},{"t":"Invest in your ability to adapt","open":true,"d":"Markets change constantly. The ability to learn faster becomes a competitive advantage."},{"t":"Understand downside before upside","open":true,"d":"Smart decisions start by understanding what can go wrong before chasing what can go right."},{"t":"Build with integrity","open":true,"d":"Short-term wins disappear. Reputation and trust determine long-term success."},{"t":"Stay hungry after success","open":true,"d":"Past achievements create experience, not permission to stop improving."},{"t":"The founder sets the standard","open":true,"d":"Teams often reflect the mindset, discipline, and ambition of the person leading them."},{"t":"Focus creates momentum","open":true,"d":"Too many priorities divide attention. Great companies concentrate on what matters most."},{"t":"Conviction before consensus","open":false},{"t":"The market rewards patience","open":false},{"t":"Never confuse activity with progress","open":false},{"t":"Great teams attract capital","open":false},{"t":"Cash flow is freedom","open":false},{"t":"The customer is the ultimate judge","open":false},{"t":"Build quietly, deliver loudly","open":false},{"t":"Every setback contains data","open":false},{"t":"The right partnership changes everything","open":false},{"t":"Small advantages compound","open":false},{"t":"Avoid shortcuts that damage foundations","open":false},{"t":"Your network is your multiplier","open":false},{"t":"Make decisions with first principles","open":false},{"t":"Momentum is earned daily","open":false},{"t":"Build products people remember","open":false},{"t":"Stay adaptable in changing markets","open":false},{"t":"The best opportunities look impossible early","open":false},{"t":"Strong founders create strong cultures","open":false},{"t":"Protect your time like capital","open":false},{"t":"Learn from every market cycle","open":false},{"t":"Long-term thinking creates unfair advantages","open":false},{"t":"The next opportunity starts with preparation","open":false}];
-    const videoTopics = [
-      {"t":"Every business starts from zero","open":true,"img":assetImg("Every business starts from zero-11cf7f33.webp"),"embed":"DddfD5cRyky"},
-      {"t":"Karna kya hai?","open":true,"img":assetImg("karna kya ha-babc5899.webp"),"embed":"DdjfsqvxMwg"},
-      {"t":"Only you know your hard days","open":true,"img":assetImg("Only you know your hard days-cab9a82e.webp"),"embed":"DdapOfDxwG0"},
-      {"t":"Say no to feelings","open":true,"img":assetImg("Say no to feelings-e4f24458.webp"),"embed":"Ddfrr6wseuW"},
-      {"t":"Fear is temporary, regret is forever","open":true,"img":assetImg("Fear is temporary, Regret is forever-677c6caa.webp"),"embed":"DdYUe29xE3Y"},
-      {"t":"Investor ko kya chahiye?","open":true,"img":assetImg("Investor ko kya chahiye-60eb65b8.webp"),"embed":"DdBKXzhxkiY"},
-      {"t":"No risk no story","open":true,"img":assetImg("No risk no story-724db17c.webp"),"embed":"Dc8ARykxvJe"},
-      {"t":"Hardships make you a man","open":true,"img":assetImg("Hardships make you a man-24fa52e5.webp"),"embed":"Dc5ZqKlRvWm"},
-      {"t":"Face your fears","open":true,"img":assetImg("Face your fears-5a531736.webp"),"embed":"Dc2-wmeRpEk"},
-      {"t":"One decision can change your life","open":true,"img":assetImg("One decision can change your life-bb031985.webp"),"embed":"DcytofeR6TZ"},
-      {"t":"Self-accountability zero","open":true,"img":assetImg("Self Accountability Zero-32255a39.webp"),"embed":"Dcsy6gWRmYg"},
-      {"t":"No one is coming to save you","open":true,"img":assetImg("No one is coming to save you-ee57093b.webp"),"embed":"Dcp8fbHRT8s"},
-      {"t":"Everything is possible","open":true,"img":assetImg("Everything is possible-f873217a.webp"),"embed":"DcnYXsJOwZ-"},
-      {"t":"Decide, commit, execute","open":true,"img":assetImg("Decide Commit Execute-9d63afbf.webp"),"embed":"DckyOeIgy0t"},
-      {"t":"Go beyond your limits","open":true,"img":assetImg("Go beyind your limits-971311a4.webp"),"embed":"DciU8tzx4fz"},
-      {"t":"5 year study plan","open":true,"img":assetImg("5 year study plan-2c8df772.webp"),"embed":"DcfqUjyxZrw"},
-      {"t":"Create 25th hour","open":true,"img":assetImg("Create 25th hour-9dc29a18.webp"),"embed":"DcDqOCuxuHv"},
-      {"t":"Think like an owner, not a worker","open":true,"img":assetImg("Think like an owner not a worker-56d1b17b.webp"),"embed":"Dcah-Fyx4hf"},
-      {"t":"Built by tough days","open":true,"img":assetImg("Built by tough days-8f41b623.webp"),"embed":"DcX787zxs7W"},
-      {"t":"You have to work","open":true,"img":assetImg("You have to work-23d23206.webp"),"embed":"DcLCWJpxmRN"},
-      {"t":"Your family depends on you","open":true,"img":assetImg("Your family depends on you-5910241d.webp"),"embed":"Db-PNXPAr-L"},
-      {"t":"Stay humble, table always turns","open":true,"img":assetImg("Stay humble, table always turns-10b9b879.webp"),"embed":"DdGOgkuRFmH"},
-      {"t":"The 1% mindset","open":true,"img":assetImg("The 1% Mindset-4379f73e.webp"),"embed":"DdDumC1uX_S"},
-      {"t":"Think beyond yourself","open":true,"img":assetImg("Think beyond yourself-897bae4d.webp"),"embed":"Dc-hDICx8TN"}
-    ];
+    const principleTopics = (_sec.playbook && _sec.playbook.principles) || [];
+    const videoTopics = (_sec.playbook && _sec.playbook.reels) || [];
     for (let i = principleTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = principleTopics[i]; principleTopics[i] = principleTopics[j]; principleTopics[j] = t; }
     const hiddenTopics = principleTopics.slice(0, 16);
     hiddenTopics.forEach(p => { p.open = false; p.img = videoTopics[Math.floor(Math.random() * videoTopics.length)].img; p.embed = null; });
@@ -1392,7 +1363,7 @@ function updateVentures(y) {
 
 function buildPods() {
     if (!self.sec5) return;
-    self.podData = [{"t":"How Saad Made His Millions","src":"Business Breakdown","d":"Two operators unpack how Saad built his multi-million dollar empire.","yt":"gz5yMEZzrsM","img":assetImg("gz5yMEZzrsM.webp")},{"t":"The Money Game","src":"Sapiens Experience with Uzair","d":"An entrepreneur\u2019s honest take on chasing capital and conviction.","yt":"iUn7TTXfTmk","img":assetImg("iUn7TTXfTmk.webp")},{"t":"H University\u2019s Free Courses","src":"The Nakash Khan Show","d":"The mission to create six million jobs, one free course at a time.","yt":"kCjLfHKCPJ4","img":assetImg("kCjLfHKCPJ4.webp")},{"t":"Unfiltered Talk","src":"First Time, With Saad Hashmani","d":"An unguarded first-time conversation on fame, ego, and the climb.","yt":"MVXua-u3SW4","img":assetImg("MVXua-u3SW4.webp")},{"t":"Mindset To Become Millionaire","src":"Episode #41","d":"The daily mindset shifts behind a self-made fortune.","yt":"wAnStcdDy-w","img":assetImg("wAnStcdDy-w.webp")},{"t":"Making It Big In The US","src":"Junaid Akram\u2019s Podcast \u00b7 #136","d":"A kid from the streets of Karachi, building a business in Houston.","yt":"Wk0Ch-UzEEY","img":assetImg("Wk0Ch-UzEEY.webp")},{"t":"Rise To Power In US, Part 1","src":"Two Flags, One Ambition","d":"Comparing the road to power in Pakistan and the United States.","yt":"xbcH7a01Qc0","img":assetImg("xbcH7a01Qc0.webp")},{"t":"Blueprint Of A Millionaire Mind, Part 1","src":"Sapiens Experience with Uzair","d":"Reverse-engineering the mindset behind the money.","yt":"xZrWIopkOkY","img":assetImg("xZrWIopkOkY.webp")},{"t":"How To Become A Millionaire Living In Pakistan","src":"Money Loves Me \u00b7 Episode 37","d":"Building wealth without ever leaving home.","yt":"yKeCu0Rn-xA","img":assetImg("yKeCu0Rn-xA.webp")},{"t":"Ghurbat Seh Lena, Zillat Na Sehna","src":"Mufti Tariq Masood Podcast","d":"A candid conversation on poverty, dignity, and self-respect.","yt":"ZAU6U6WGwGY","img":assetImg("ZAU6U6WGwGY.webp")},{"t":"I Made A Free University","src":"EON","d":"The story behind building an education platform that costs nothing.","yt":"zYObkTusSEc","img":assetImg("zYObkTusSEc.webp")},{"t":"Million Dollar Journey","src":"Founder To Founder","d":"Tracing the milestones from first dollar to first million.","yt":"A7AaahqIfHQ","img":assetImg("A7AaahqIfHQ.webp")},{"t":"Main Logo Ko Ameer Kerdonga","src":"Featuring Saad Hashmani","d":"A promise to help others build their own path to wealth.","yt":"qbVuRiarIbc","img":assetImg("qbVuRiarIbc.webp")},{"t":"The Mindset That Made Him A Millionaire In America","src":"How Does It Work? \u00b7 Tecno","d":"Breaking down the discipline behind an immigrant success story.","yt":"qhC3EDWL9SQ","img":assetImg("qhC3EDWL9SQ.webp")},{"t":"Pakistan, India Ya Bangladesh: Sabke Liye!","src":"A Message For The Region","d":"Why the lessons of building a business apply across every border.","yt":"yDY7oO_HTj4","img":assetImg("yDY7oO_HTj4.webp")},{"t":"The Truth About My Cars, Money And Ego","src":"Talha Ahad Podcast \u00b7 Ep 154","d":"An honest reckoning with fame, wealth, and what it costs.","yt":"dfKuHC0YpXY","img":assetImg("dfKuHC0YpXY.webp")},{"t":"Blueprint Of Success","src":"Sapiens Experience with Uzair","d":"A working framework for building something that lasts.","yt":"fnp1dEWSpbs","img":assetImg("fnp1dEWSpbs.webp")},{"t":"Millionaire Mindset","src":"Episode 203","d":"What actually separates the 1% from everyone else.","yt":"tVilzpqgHJo","img":assetImg("tVilzpqgHJo.webp")},{"t":"Funding For AI Startups In Pakistan","src":"The Next Frontier","d":"A look at where early-stage capital is heading next.","yt":"5cltPCLP7ec","img":assetImg("5cltPCLP7ec.webp")},{"t":"The Real Hashmani Success Philosophy","src":"Unpacked","d":"Separating the myth from the method behind the name.","yt":"CiJ_uX3VPGU","img":assetImg("CiJ_uX3VPGU.webp")},{"t":"Shaping Mindsets","src":"Houston To The World","d":"How one perspective shift changes everything that follows.","yt":"dxbStzijYtg","img":assetImg("dxbStzijYtg.webp")}];
+    self.podData = (_sec.podcasts && _sec.podcasts.length) ? _sec.podcasts : [];
     self.pods = Array.from(self.sec5.querySelectorAll('[data-pod-card]')).map(el => ({ el }));
     self.podN = self.pods.length;
     self.podP = 0; self.podTarget = 0; self.podCenter = -1;
@@ -1533,7 +1504,7 @@ function updateSection5(y) {
 
 function buildTestis() {
     if (!self.sec6) return;
-    self.testiStats = {"all":[["1.1M","TikTok followers"],["40.4M","Likes"],["176K","FB followers"]],"google":[["4.9","Avg rating"],["320+","Reviews"],["98%","Positive"]],"instagram":[["Active","Community"],["High","Engagement"],["Daily","Stories"]],"facebook":[["176K","Followers"],["4.8","Page rating"],["2.1K","Shares"]],"tiktok":[["1.1M","Followers"],["40.4M","Likes"],["Daily","Posts"]],"twitter":[["1.9K","Followers"],["2012","On X since"],["Active","Threads"]]};
+    self.testiStats = (_sec.receipts_stats && Object.keys(_sec.receipts_stats).length) ? _sec.receipts_stats : {};
     self.testiCols = Array.from(self.sec6.querySelectorAll('[data-testi-col]')).map(el => ({
       el, track: el.querySelector('[data-testi-track]'), side: el.getAttribute('data-side'),
       pos: 0, half: 0, hover: false, drag: false, lastY: 0, vel: 0
@@ -2059,7 +2030,9 @@ function setQuality(q) {
 function buildCollage() {
     if (!self.collageEl) return;
     if ((self.props.heroCollage ?? true) === false) { self.collageEl.style.display = 'none'; return; }
-    const imgs = Array.from({ length: 43 }, (_, i) => 'SH Hero Images/Saadhashmani-hero-image (' + (i + 1) + ').webp');
+    var collageUrls = _sec.collage || [];
+    if (!collageUrls.length) return;
+    var imgs = collageUrls;
     const rnd = (a, b) => a + Math.random() * (b - a);
     self.collageEl.innerHTML = '';
     self.tiles = [];
@@ -2078,14 +2051,14 @@ function buildCollage() {
       const track = document.createElement('div');
       track.style.cssText = 'position:absolute;left:0;top:0;width:100%;display:flex;flex-direction:column;gap:' + gap.toFixed(0) + 'px;will-change:transform;animation:vault-cmarquee ' + dur.toFixed(1) + 's linear infinite;animation-delay:' + (-rnd(0, dur)).toFixed(1) + 's';
       const set = [];
-      for (let j = 0; j < perCol; j++) set.push({ src: imgs[bag[c * perCol + j]], wpc: rnd(60, 100), ar: rnd(0.74, 0.98), off: rnd(0, 1), op: mob ? rnd(.55, .85) : rnd(.4, .72) });
+      for (let j = 0; j < perCol; j++) set.push({ src: imgs[bag[c * perCol + j] % imgs.length], wpc: rnd(60, 100), ar: rnd(0.74, 0.98), off: rnd(0, 1), op: mob ? rnd(.55, .85) : rnd(.4, .72) });
       const colFrac = (c + 0.5) / cols;
       [...set, ...set].forEach((d) => {
         const wrap = document.createElement('div');
         wrap.setAttribute('data-ctile', '');
         wrap.style.cssText = 'width:100%;display:flex;justify-content:' + (d.off < .5 ? 'flex-start' : 'flex-end') + ';will-change:transform';
         const img = document.createElement('img');
-        img.src = 'uploads/' + d.src;
+        img.src = d.src;
         img.loading = 'lazy';
         img.decoding = 'async';
         img.draggable = false;

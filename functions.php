@@ -1,53 +1,68 @@
 <?php
-/**
- * Saad Hashmani Theme Functions
- */
-
 if (!defined('ABSPATH')) exit;
 
-define('SH_VERSION', '1.0.0');
+define('SH_VERSION', '2.0.0');
 define('SH_DIR', get_template_directory());
 define('SH_URI', get_template_directory_uri());
+
+require_once SH_DIR . '/inc/defaults.php';
+require_once SH_DIR . '/inc/helpers.php';
+require_once SH_DIR . '/inc/seo.php';
+require_once SH_DIR . '/inc/theme-settings.php';
 
 function sh_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
     add_theme_support('html5', ['search-form', 'comment-form', 'comment-list', 'gallery', 'caption']);
+    add_image_size('sh-card', 400, 400, true);
+    add_image_size('sh-timeline', 512, 640, true);
+    add_image_size('sh-podcast', 544, 700, true);
+    add_image_size('sh-reel', 360, 640, true);
 }
 add_action('after_setup_theme', 'sh_setup');
 
 function sh_enqueue() {
-    // Fonts
-    wp_enqueue_style('sh-fontshare', 'https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=general-sans@400,500,600&display=swap', [], null);
-    wp_enqueue_style('sh-google-fonts', 'https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap', [], null);
+    $fonts = sh_get('options.fonts');
+    if (!empty($fonts['grotesk_url'])) {
+        wp_enqueue_style('sh-fontshare', $fonts['grotesk_url'], [], null);
+    }
+    if (!empty($fonts['google_url'])) {
+        wp_enqueue_style('sh-google-fonts', $fonts['google_url'], [], null);
+    }
 
-    // Theme CSS
     wp_enqueue_style('sh-style', get_stylesheet_uri(), [], SH_VERSION);
     wp_enqueue_style('sh-mobile', SH_URI . '/css/mobile.css', ['sh-style'], SH_VERSION, '(max-width:768px)');
 
-    // Lenis smooth scroll
     wp_enqueue_script('lenis', 'https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js', [], '1.1.18', true);
-
-    // Main app
     wp_enqueue_script('sh-app', SH_URI . '/js/app.js', ['lenis'], SH_VERSION, true);
 
-    // Pass asset paths to JS
+    $hero = sh_resolve_hero();
     wp_localize_script('sh-app', 'shTheme', [
         'ajaxUrl'  => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('sh_contact'),
-        'assetUrl' => SH_URI . '/assets/',
+        'options'  => sh_get('options'),
+        'hero'     => $hero,
+        'sections' => [
+            'record'         => ['eyebrow' => sh_get('record.eyebrow'), 'heading' => sh_get('record.heading'), 'stats' => sh_get('record.stats')],
+            'timeline'       => sh_resolve_timeline(),
+            'ventures'       => sh_resolve_ventures(),
+            'playbook'       => sh_resolve_playbook(),
+            'podcasts'       => sh_resolve_podcasts(),
+            'testimonials'   => sh_resolve_testimonials(),
+            'receipts_stats' => sh_get('receipts.stats'),
+            'collage'        => sh_resolve_collage(),
+        ],
+        'contact'  => sh_get('contact'),
     ]);
 }
 add_action('wp_enqueue_scripts', 'sh_enqueue');
 
-// Remove WP emoji, embed, and block library for performance
 remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
 remove_action('wp_head', 'wp_generator');
 remove_action('wp_head', 'wlwmanifest_link');
 remove_action('wp_head', 'rsd_link');
 
-// Contact form AJAX handler
 function sh_contact_submit() {
     check_ajax_referer('sh_contact', 'nonce');
 
@@ -63,7 +78,6 @@ function sh_contact_submit() {
     global $wpdb;
     $table = $wpdb->prefix . 'sh_submissions';
 
-    // Create table on first use
     if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
         $charset = $wpdb->get_charset_collate();
         $wpdb->query("CREATE TABLE $table (
@@ -79,7 +93,6 @@ function sh_contact_submit() {
         ) $charset");
     }
 
-    $now = current_time('mysql');
     $result = $wpdb->insert($table, [
         'submitted_date' => wp_date('Y-m-d'),
         'submitted_time' => wp_date('H:i:s'),
@@ -90,12 +103,10 @@ function sh_contact_submit() {
     ]);
 
     if ($result) {
-        // Email notification
         $to = get_option('admin_email');
         $subject = "New contact from $name";
         $body = "Name: $name\nEmail: $email\nType: $type\n\nMessage:\n$message";
         wp_mail($to, $subject, $body);
-
         wp_send_json_success(['id' => $wpdb->insert_id]);
     } else {
         wp_send_json_error(['error' => 'Database error'], 500);

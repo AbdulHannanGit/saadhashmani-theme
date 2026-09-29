@@ -1,0 +1,234 @@
+/* SH Admin Settings */
+.sh-settings-wrap {
+    max-width: 1200px;
+    padding: 20px;
+    margin: 20px auto;
+}
+.sh-settings-wrap h1 {
+    margin-bottom: 20px;
+}
+
+/* Tabs */
+.sh-tabs,
+.sh-sub-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #333;
+    margin-bottom: 24px;
+}
+.sh-tab-link,
+.sh-sub-tab-link {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #a0a0a0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-weight: 500;
+    transition: color .2s, border-color .2s;
+}
+.sh-tab-link:hover,
+.sh-sub-tab-link:hover {
+    color: #fff;
+}
+.sh-tab-link.active,
+.sh-sub-tab-link.active {
+    color: #fff;
+    border-bottom-color: #2271b1;
+}
+.sh-sub-tabs {
+    border-bottom-color: #2a2a2a;
+    margin-bottom: 20px;
+}
+.sh-sub-tab-link {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+/* Fields */
+.sh-field {
+    margin-bottom: 16px;
+}
+.sh-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #ccc;
+}
+.sh-field-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.sh-field-inline label {
+    display: inline;
+    margin-bottom: 0;
+}
+.sh-field input[type="text"],
+.sh-field input[type="url"],
+.sh-field input[type="email"],
+.sh-field input[type="number"],
+.sh-field textarea,
+.sh-field select {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border: 1px solid #444;
+    padding: 6px 10px;
+    border-radius: 3px;
+}
+.sh-field input[type="text"]:focus,
+.sh-field input[type="url"]:focus,
+.sh-field input[type="email"]:focus,
+.sh-field textarea:focus,
+.sh-field select:focus {
+    border-color: #2271b1;
+    outline: none;
+}
+
+/* Color inputs */
+.sh-color-input {
+    width: 200px;
+    font-family: monospace;
+}
+
+/* Tooltip */
+.sh-tooltip {
+    position: relative;
+    cursor: help;
+    color: #666;
+    font-size: 13px;
+    margin-left: 4px;
+}
+.sh-tooltip:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #ddd;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    max-width: 320px;
+    white-space: normal;
+    z-index: 100;
+    border: 1px solid #444;
+    pointer-events: none;
+    margin-bottom: 4px;
+}
+
+/* Media preview */
+.sh-media-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.sh-media-preview {
+    max-width: 120px;
+    max-height: 120px;
+}
+.sh-media-preview img {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 4px;
+    display: block;
+}
+
+/* Gallery */
+.sh-gallery-preview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.sh-gallery-thumb {
+    position: relative;
+    display: inline-block;
+}
+.sh-gallery-thumb img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.sh-gallery-remove-img {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #d63638;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Repeater */
+.sh-repeater-item {
+    border: 1px solid #333;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    background: #181818;
+}
+.sh-repeater-item hr {
+    border-color: #333;
+    margin-top: 12px;
+}
+
+/* Video field */
+.sh-video-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* JSON editor */
+.sh-json-editor textarea {
+    width: 100%;
+    min-height: 600px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 16px;
+    resize: vertical;
+    tab-size: 2;
+}
+
+/* Buttons */
+.sh-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.sh-btn:hover {
+    background: #135e96;
+}
+
+/* Fieldset */
+fieldset {
+    border-color: #333;
+    border-radius: 4px;
+}
+fieldset legend {
+    color: #ccc;
+    padding: 0 6px;
+}
