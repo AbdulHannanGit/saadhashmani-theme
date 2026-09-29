@@ -23,8 +23,10 @@ function sh_defaults() {
                 'line_strong' => 'rgba(255,255,255,.14)',
             ],
             'fonts' => [
-                'grotesk_url' => 'https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=general-sans@400,500,600&display=swap',
-                'google_url'  => 'https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
+                'grotesk_url'   => 'https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=general-sans@400,500,600&display=swap',
+                'google_url'    => 'https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
+                'local_heading' => 0,
+                'local_body'    => 0,
             ],
         ],
 

@@ -87,12 +87,32 @@ $color_tips = [
 <!-- Font URLs -->
 <h3>Fonts</h3>
 <div class="sh-field">
-    <label>Grotesk / Fontshare URL <span class="sh-tooltip" data-tip="Fontshare stylesheet URL for Cabinet Grotesk and General Sans.">&#8505;</span></label>
+    <label>Grotesk / Fontshare URL <span class="sh-tooltip" data-tip="Fontshare stylesheet URL for Cabinet Grotesk and General Sans. Leave empty if using a local font file below.">&#8505;</span></label>
     <input type="url" name="sh[options][fonts][grotesk_url]" value="<?php echo esc_attr($o['fonts']['grotesk_url']); ?>" class="regular-text" style="width:100%">
 </div>
 <div class="sh-field">
     <label>Google Fonts URL <span class="sh-tooltip" data-tip="Google Fonts stylesheet URL for Anton, Space Grotesk, JetBrains Mono.">&#8505;</span></label>
     <input type="url" name="sh[options][fonts][google_url]" value="<?php echo esc_attr($o['fonts']['google_url']); ?>" class="regular-text" style="width:100%">
+</div>
+<div class="sh-field">
+    <label>Local Heading Font (WOFF2) <span class="sh-tooltip" data-tip="Upload a .woff2 font file from Media Library. Overrides the Fontshare URL for Cabinet Grotesk (headings, preloader name).">&#8505;</span></label>
+    <div class="sh-media-field">
+        <input type="hidden" name="sh[options][fonts][local_heading]" value="<?php echo esc_attr($o['fonts']['local_heading'] ?? 0); ?>" class="sh-media-id">
+        <?php $lh_url = sh_img($o['fonts']['local_heading'] ?? 0, 'full'); ?>
+        <div class="sh-media-preview"><?php if ($lh_url): ?><code><?php echo esc_html(basename(get_attached_file($o['fonts']['local_heading']))); ?></code><?php endif; ?></div>
+        <button type="button" class="button sh-media-btn">Upload</button>
+        <button type="button" class="button sh-media-remove">Remove</button>
+    </div>
+</div>
+<div class="sh-field">
+    <label>Local Body Font (WOFF2) <span class="sh-tooltip" data-tip="Upload a .woff2 font file from Media Library. Overrides the Fontshare URL for General Sans (body text).">&#8505;</span></label>
+    <div class="sh-media-field">
+        <input type="hidden" name="sh[options][fonts][local_body]" value="<?php echo esc_attr($o['fonts']['local_body'] ?? 0); ?>" class="sh-media-id">
+        <?php $lb_url = sh_img($o['fonts']['local_body'] ?? 0, 'full'); ?>
+        <div class="sh-media-preview"><?php if ($lb_url): ?><code><?php echo esc_html(basename(get_attached_file($o['fonts']['local_body'] ?? 0))); ?></code><?php endif; ?></div>
+        <button type="button" class="button sh-media-btn">Upload</button>
+        <button type="button" class="button sh-media-remove">Remove</button>
+    </div>
 </div>
 
 <!-- Demo Media Importer -->
@@ -106,4 +126,4 @@ $color_tips = [
     <button type="button" id="sh-demo-import" class="button button-secondary">Import Demo Media</button>
     <span id="sh-demo-spinner" class="spinner" style="float:none;margin:0 8px"></span>
 </div>
-<div id="sh-demo-log" style="display:none;margin-top:12px;max-height:300px;overflow-y:auto;padding:12px 16px;border-radius:8px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);font-family:monospace;font-size:12px;line-height:1.8;color:#a1a1aa"></div>
+<div id="sh-demo-log" class="sh-demo-log" style="display:none"></div>

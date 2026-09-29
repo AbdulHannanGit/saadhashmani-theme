@@ -23,7 +23,23 @@ add_action('after_setup_theme', 'sh_setup');
 
 function sh_enqueue() {
     $fonts = sh_get('options.fonts');
-    if (!empty($fonts['grotesk_url'])) {
+    $local_heading_url = !empty($fonts['local_heading']) ? wp_get_attachment_url((int) $fonts['local_heading']) : '';
+    $local_body_url    = !empty($fonts['local_body'])    ? wp_get_attachment_url((int) $fonts['local_body'])    : '';
+
+    if ($local_heading_url || $local_body_url) {
+        $css = '';
+        if ($local_heading_url) {
+            $css .= "@font-face{font-family:'Cabinet Grotesk';src:url('" . esc_url($local_heading_url) . "') format('woff2');font-weight:100 900;font-display:swap}";
+        }
+        if ($local_body_url) {
+            $css .= "@font-face{font-family:'General Sans';src:url('" . esc_url($local_body_url) . "') format('woff2');font-weight:100 900;font-display:swap}";
+        }
+        wp_register_style('sh-local-fonts', false);
+        wp_enqueue_style('sh-local-fonts');
+        wp_add_inline_style('sh-local-fonts', $css);
+    }
+
+    if (!$local_heading_url && !empty($fonts['grotesk_url'])) {
         wp_enqueue_style('sh-fontshare', $fonts['grotesk_url'], [], null);
     }
     if (!empty($fonts['google_url'])) {
@@ -127,6 +143,8 @@ function sh_demo_import() {
 
     $manifest = json_decode(wp_remote_retrieve_body($response), true);
     if (!is_array($manifest) || empty($manifest['files'])) wp_send_json_error('Invalid manifest');
+
+    @set_time_limit(600);
 
     $base_url = $manifest['base_url'] ?? '';
     $settings = get_option('sh_settings', []);

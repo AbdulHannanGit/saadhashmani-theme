@@ -545,7 +545,7 @@ function preload() {
       venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
     }
     const total = tasks.length; let done = 0;
-    self._preMinUntil = performance.now() + 5000;
+    self._preMinUntil = performance.now() + (total ? 5000 : 1800);
     return new Promise((resolve) => {
       if (!total) { self._preTarget = 1; return resolve(); }
       tasks.forEach((t) => t.then(() => { done++; self._preTarget = done / total; if (done >= total) resolve(); }));

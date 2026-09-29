@@ -183,6 +183,7 @@
 
     // ── Demo Media Importer ──
     $('#sh-demo-import').on('click', function () {
+        if (typeof shAdmin === 'undefined') { alert('Admin script not loaded. Please reload the page.'); return; }
         var url = $('#sh-demo-url').val().trim();
         if (!url) { alert('Enter a manifest URL first.'); return; }
         if (!confirm('This will replace all current media in theme settings with demo media. Continue?')) return;
@@ -190,25 +191,31 @@
         var $btn = $(this), $spinner = $('#sh-demo-spinner'), $log = $('#sh-demo-log');
         $btn.prop('disabled', true);
         $spinner.addClass('is-active');
-        $log.show().html('<div>Starting import...</div>');
+        $log.show().html('<div>Starting import... This may take several minutes.</div>');
 
-        $.post(shAdmin.ajaxUrl, {
-            action: 'sh_demo_import',
-            nonce: shAdmin.nonce,
-            manifest_url: url
+        $.ajax({
+            url: shAdmin.ajaxUrl,
+            type: 'POST',
+            timeout: 600000,
+            data: {
+                action: 'sh_demo_import',
+                nonce: shAdmin.nonce,
+                manifest_url: url
+            }
         }).done(function (res) {
             if (res.success && res.data.log) {
                 var html = res.data.log.map(function (line) {
-                    var color = line.indexOf('FAILED') === 0 ? '#e74c3c' : line.indexOf('Imported') === 0 ? '#2ecc71' : '#a1a1aa';
+                    var color = line.indexOf('FAILED') === 0 ? '#d63638' : line.indexOf('Imported') === 0 ? '#00a32a' : '#50575e';
                     return '<div style="color:' + color + '">' + $('<span>').text(line).html() + '</div>';
                 }).join('');
-                html += '<div style="color:#f6f5f2;margin-top:8px;font-weight:bold">Done — ' + res.data.imported + ' files imported. Reload to see changes.</div>';
+                html += '<div style="color:#1d2327;margin-top:8px;font-weight:bold">Done — ' + res.data.imported + ' files imported. Reload to see changes.</div>';
                 $log.html(html);
             } else {
-                $log.html('<div style="color:#e74c3c">Error: ' + (res.data || 'Unknown error') + '</div>');
+                $log.html('<div style="color:#d63638">Error: ' + (res.data || 'Unknown error') + '</div>');
             }
-        }).fail(function (xhr) {
-            $log.html('<div style="color:#e74c3c">Request failed: ' + xhr.statusText + '</div>');
+        }).fail(function (xhr, status) {
+            var msg = status === 'timeout' ? 'Request timed out. The import may still be running — check Media Library.' : 'Request failed: ' + xhr.statusText;
+            $log.html('<div style="color:#d63638">' + msg + '</div>');
         }).always(function () {
             $btn.prop('disabled', false);
             $spinner.removeClass('is-active');
