@@ -76,12 +76,13 @@ function sh_resolve_ventures() {
 
 function sh_resolve_playbook() {
     $pb = sh_get('playbook');
+    $raw = is_array($pb['principles']) ? array_values(array_filter($pb['principles'], 'is_array')) : [];
     $principles = array_map(function ($p) {
         $p['img'] = sh_img($p['img'] ?? 0, 'sh-reel');
         $p['embed'] = $p['embed'] ?? '';
         $p['open'] = !empty($p['open']);
         return $p;
-    }, $pb['principles']);
+    }, $raw);
     return [
         'eyebrow'    => $pb['eyebrow'],
         'heading'    => $pb['heading'],

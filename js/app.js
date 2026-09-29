@@ -991,8 +991,8 @@ function wireTimelineModal() {
   }
 
 function buildPlaybook() {
-    self.pbTopics = ((_sec.playbook && _sec.playbook.principles) || []).map(function(p) {
-      return { t: p.t, d: p.d || '', open: !!p.open, img: p.img || '', embed: p.embed || '' };
+    self.pbTopics = ((_sec.playbook && _sec.playbook.principles) || []).filter(function(p) { return p && typeof p === 'object'; }).map(function(p) {
+      return { t: p.t || '', d: p.d || '', open: !!p.open, img: p.img || '', embed: p.embed || '' };
     });
     self.pbs = [];
     for (let i = self.pbTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = self.pbTopics[i]; self.pbTopics[i] = self.pbTopics[j]; self.pbTopics[j] = t; }
