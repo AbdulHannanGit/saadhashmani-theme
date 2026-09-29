@@ -114,3 +114,72 @@ function sh_contact_submit() {
 }
 add_action('wp_ajax_sh_contact', 'sh_contact_submit');
 add_action('wp_ajax_nopriv_sh_contact', 'sh_contact_submit');
+
+function sh_demo_import() {
+    check_ajax_referer('sh_settings_nonce', 'nonce');
+    if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+    $manifest_url = esc_url_raw($_POST['manifest_url'] ?? '');
+    if (empty($manifest_url)) wp_send_json_error('No manifest URL');
+
+    $response = wp_remote_get($manifest_url, ['timeout' => 30]);
+    if (is_wp_error($response)) wp_send_json_error('Failed to fetch manifest: ' . $response->get_error_message());
+
+    $manifest = json_decode(wp_remote_retrieve_body($response), true);
+    if (!is_array($manifest) || empty($manifest['files'])) wp_send_json_error('Invalid manifest');
+
+    $base_url = $manifest['base_url'] ?? '';
+    $settings = get_option('sh_settings', []);
+    if (!is_array($settings)) $settings = [];
+    $log = [];
+    $id_map = [];
+
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    foreach ($manifest['files'] as $file) {
+        $url = $base_url . $file['path'];
+        $log[] = 'Downloading: ' . $file['path'];
+
+        $tmp = download_url($url, 60);
+        if (is_wp_error($tmp)) {
+            $log[] = 'FAILED: ' . $tmp->get_error_message();
+            continue;
+        }
+
+        $file_array = [
+            'name'     => basename($file['path']),
+            'tmp_name' => $tmp,
+        ];
+
+        $att_id = media_handle_sideload($file_array, 0, $file['title'] ?? '');
+        if (is_wp_error($att_id)) {
+            $log[] = 'FAILED to import: ' . $att_id->get_error_message();
+            @unlink($tmp);
+            continue;
+        }
+
+        $id_map[$file['key']] = $att_id;
+        $log[] = 'Imported: ' . $file['path'] . ' → ID ' . $att_id;
+    }
+
+    if (!empty($manifest['settings_map']) && !empty($id_map)) {
+        foreach ($manifest['settings_map'] as $dot_path => $file_key) {
+            if (!isset($id_map[$file_key])) continue;
+            $keys = explode('.', $dot_path);
+            $ref = &$settings;
+            foreach ($keys as $k) {
+                if (!isset($ref[$k])) $ref[$k] = [];
+                $ref = &$ref[$k];
+            }
+            $ref = $id_map[$file_key];
+            unset($ref);
+        }
+        update_option('sh_settings', $settings);
+        $log[] = 'Settings updated with ' . count($id_map) . ' media references.';
+    }
+
+    wp_send_json_success(['log' => $log, 'imported' => count($id_map)]);
+}
+add_action('wp_ajax_sh_demo_import', 'sh_demo_import');

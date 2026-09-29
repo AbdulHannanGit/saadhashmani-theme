@@ -10,6 +10,10 @@ add_action('admin_enqueue_scripts', function ($hook) {
     wp_enqueue_media();
     wp_enqueue_style('sh-admin', get_template_directory_uri() . '/css/admin.css', [], '1.0');
     wp_enqueue_script('sh-admin', get_template_directory_uri() . '/js/admin.js', ['jquery'], '1.0', true);
+    wp_localize_script('sh-admin', 'shAdmin', [
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce'   => wp_create_nonce('sh_settings_nonce'),
+    ]);
 });
 
 function sh_settings_page() {

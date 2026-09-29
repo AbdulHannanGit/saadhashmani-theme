@@ -31,10 +31,13 @@ The admin settings page (**Saad Hashmani** in the sidebar) has four tabs:
 |---------|-------------|
 | Logo | Site logo (WebP/PNG, transparent, min 200px height) |
 | Custom Cursor | Toggle the lens cursor effect on desktop |
+| Preloader | Enable/disable the loading screen with name scramble animation |
 | Animations | Enable/disable scroll-driven animations |
-| Video Quality | Default video quality (480p / 720p / 1080p) |
+| Video Quality (Desktop) | Default background video quality on desktop (480p / 720p / 1080p) |
+| Video Quality (Mobile) | Video quality on mobile devices under 768px (saves bandwidth) |
 | Colors (9) | `bg`, `bg-raised`, `bg-inset`, `tx`, `tx-muted`, `tx-faint`, `glow`, `line`, `line-strong` |
 | Fonts (2) | Fontshare URL (Cabinet Grotesk) and Google Fonts URL |
+| Demo Media Importer | One-click import of all demo media from a manifest URL (see below) |
 
 ### Sections (7 sub-tabs)
 - **Hero** — Eyebrow, first/last name, preloader text, scroll text, gate message, poster image, 3 video qualities (480p/720p/1080p)
@@ -137,6 +140,55 @@ The theme uses three font families loaded via external stylesheets (configurable
 - **Cabinet Grotesk** (headings) — via Fontshare
 - **General Sans** (body) — via Fontshare
 - **JetBrains Mono** (mono/labels) — via Google Fonts
+
+## Demo Media Import
+
+The theme ships with no bundled media. To set up a fresh install with demo content, use the **Demo Media Importer** in Theme Options.
+
+### Setup
+
+1. Create a separate GitHub repository (e.g. `saadhashmani-demo-media`) — this keeps media out of the theme repo.
+2. Add all demo images and videos to the repo, organized in folders.
+3. Create a `manifest.json` at the repo root with this format:
+
+```json
+{
+  "base_url": "https://raw.githubusercontent.com/AbdulHannanGit/saadhashmani-demo-media/main/",
+  "files": [
+    { "key": "logo",       "path": "images/logo.webp",          "title": "Site Logo" },
+    { "key": "poster",     "path": "images/poster.webp",        "title": "Video Poster" },
+    { "key": "video_480",  "path": "video/full-video-480p.mp4", "title": "Video 480p" },
+    { "key": "video_720",  "path": "video/full-video-720p.mp4", "title": "Video 720p" },
+    { "key": "video_1080", "path": "video/full-video-1080p.mp4","title": "Video 1080p" },
+    { "key": "tl_0",       "path": "images/timeline-1.webp",    "title": "Timeline 2014" },
+    { "key": "v0_logo",    "path": "images/tp-logo.png",        "title": "Trading Papa Logo" },
+    { "key": "v0_g0",      "path": "images/tp-gallery-1.webp",  "title": "TP Gallery 1" }
+  ],
+  "settings_map": {
+    "options.logo": "logo",
+    "hero.poster": "poster",
+    "hero.video_480": "video_480",
+    "hero.video_720": "video_720",
+    "hero.video_1080": "video_1080",
+    "record.timeline.0.img": "tl_0",
+    "ventures.0.logo": "v0_logo",
+    "ventures.0.gallery.0": "v0_g0"
+  }
+}
+```
+
+**How it works:**
+- `files` lists every media file with a unique `key`, its `path` relative to `base_url`, and an optional `title`.
+- `settings_map` maps dot-path theme setting keys to file keys. After import, each setting stores the WordPress attachment ID of the imported file.
+- The importer downloads each file, imports it into the WordPress Media Library via `media_handle_sideload`, then updates `sh_settings` with the new attachment IDs.
+- **Warning:** This replaces all current media references in theme settings.
+
+### Using the Importer
+
+1. Go to **Saad Hashmani > Theme Options**.
+2. Paste the manifest URL (or use the default).
+3. Click **Import Demo Media**.
+4. Watch the log for progress. Reload the page when done.
 
 ## License
 

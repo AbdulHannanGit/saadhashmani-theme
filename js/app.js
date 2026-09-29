@@ -10,7 +10,8 @@ var _hero = _sh.hero || {};
 var _opts = _sh.options || {};
 var _contact = _sh.contact || {};
 
-var self = { props: { videoQuality: _opts.video_quality || "720p", customCursor: _opts.custom_cursor !== false } };
+var _isMobile = window.innerWidth < 768;
+var self = { props: { videoQuality: (_isMobile ? _opts.mobile_video_quality : _opts.video_quality) || "720p", customCursor: _opts.custom_cursor !== false, preloader: _opts.preloader !== false } };
 function init() {
     self.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const gate = document.querySelector('[data-gate]');
@@ -485,7 +486,7 @@ function tickCursor() {
 function runPreloader() {
     if (self._preRan) return;
     self._preRan = true;
-    let skip = false;
+    let skip = !self.props.preloader;
     try {
       const q = new URLSearchParams(window.location.search).get('preloader');
       if (q === '0') skip = true;
@@ -553,19 +554,22 @@ function preload() {
 
 function preScrambleRAF() {
     const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&$@01/';
-    const full = 'SAAD HASHMANI'.split('');
+    const firstName = (_hero.first_name || 'SAAD').toUpperCase();
+    const lastName = (_hero.last_name || 'HASHMANI').toUpperCase();
+    const full = (firstName + ' ' + lastName).split('');
+    const splitAt = firstName.length;
     const len = full.length;
     const step = () => {
       self._preProg += ((self._preTarget || 0) - self._preProg) * 0.09;
       const timeP = (performance.now() - (self._preStart || 0)) / 5200;
       const p = self._preDone ? 1 : Math.min(Math.min(0.999, self._preProg), timeP);
-      const lockR = Math.round(p * len);           // resolve left-to-right
+      const lockR = Math.round(p * len);
       const out = full.map((c, i) => {
         if (c === ' ') return ' ';
         return (i < lockR) ? c : CH[(Math.random() * CH.length) | 0];
       });
-      if (self.preS1) self.preS1.textContent = out.slice(0, 4).join('');
-      if (self.preS2) self.preS2.textContent = out.slice(5).join('');
+      if (self.preS1) self.preS1.textContent = out.slice(0, splitAt).join('');
+      if (self.preS2) self.preS2.textContent = out.slice(splitAt + 1).join('');
       // background image reveals (opacity rises) as loading progresses
       if (self.preVeil) self.preVeil.style.opacity = (0.9 - p * 0.9).toFixed(3);
       if (!self._preDone) self._preRAF = requestAnimationFrame(step);
@@ -577,12 +581,11 @@ function finishPreloader(instant) {
     const go = () => {
       self._preDone = true; self._preTarget = 1; self._preProg = 1;
       if (self._preRAF) cancelAnimationFrame(self._preRAF);
-      if (self.preS1) self.preS1.textContent = 'Saad';
-      if (self.preS2) self.preS2.textContent = 'Hashmani';
-      // waveform morphs into the scroll arrow, ring text becomes the hero label
+      if (self.preS1) self.preS1.textContent = _hero.first_name || 'Saad';
+      if (self.preS2) self.preS2.textContent = _hero.last_name || 'Hashmani';
       if (self.preWave) self.preWave.style.opacity = '0';
       if (self.preArrow) self.preArrow.style.opacity = '1';
-      if (self.preRingText) self.preRingText.textContent = 'SCROLL TO UNLOCK \u00b7 SCROLL TO UNLOCK \u00b7 ';
+      if (self.preRingText) self.preRingText.textContent = (_hero.scroll_text || 'SCROLL TO UNLOCK \u00b7 SCROLL TO UNLOCK \u00b7 ');
       setTimeout(() => {
         if (!self.pre) return;
         self.pre.style.opacity = '0';

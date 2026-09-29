@@ -181,4 +181,38 @@
         reader.readAsText(file);
     });
 
+    // ── Demo Media Importer ──
+    $('#sh-demo-import').on('click', function () {
+        var url = $('#sh-demo-url').val().trim();
+        if (!url) { alert('Enter a manifest URL first.'); return; }
+        if (!confirm('This will replace all current media in theme settings with demo media. Continue?')) return;
+
+        var $btn = $(this), $spinner = $('#sh-demo-spinner'), $log = $('#sh-demo-log');
+        $btn.prop('disabled', true);
+        $spinner.addClass('is-active');
+        $log.show().html('<div>Starting import...</div>');
+
+        $.post(shAdmin.ajaxUrl, {
+            action: 'sh_demo_import',
+            nonce: shAdmin.nonce,
+            manifest_url: url
+        }).done(function (res) {
+            if (res.success && res.data.log) {
+                var html = res.data.log.map(function (line) {
+                    var color = line.indexOf('FAILED') === 0 ? '#e74c3c' : line.indexOf('Imported') === 0 ? '#2ecc71' : '#a1a1aa';
+                    return '<div style="color:' + color + '">' + $('<span>').text(line).html() + '</div>';
+                }).join('');
+                html += '<div style="color:#f6f5f2;margin-top:8px;font-weight:bold">Done — ' + res.data.imported + ' files imported. Reload to see changes.</div>';
+                $log.html(html);
+            } else {
+                $log.html('<div style="color:#e74c3c">Error: ' + (res.data || 'Unknown error') + '</div>');
+            }
+        }).fail(function (xhr) {
+            $log.html('<div style="color:#e74c3c">Request failed: ' + xhr.statusText + '</div>');
+        }).always(function () {
+            $btn.prop('disabled', false);
+            $spinner.removeClass('is-active');
+        });
+    });
+
 })(jQuery);

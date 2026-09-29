@@ -4,10 +4,13 @@ if (!defined('ABSPATH')) exit;
 function sh_defaults() {
     return [
         'options' => [
-            'custom_cursor'  => true,
-            'animations'     => true,
-            'video_quality'  => '720p',
-            'logo'           => 0,
+            'custom_cursor'     => true,
+            'animations'        => true,
+            'preloader'         => true,
+            'video_quality'     => '720p',
+            'mobile_video_quality' => '480p',
+            'logo'              => 0,
+            'demo_media_url'    => 'https://raw.githubusercontent.com/AbdulHannanGit/saadhashmani-demo-media/main/manifest.json',
             'colors' => [
                 'bg'          => '#0b0b0c',
                 'bg_raised'   => '#121214',
