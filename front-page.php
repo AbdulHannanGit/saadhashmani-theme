@@ -259,14 +259,7 @@ foreach ($all_stats as $as) : ?>
 <p style="margin:14px 0 0;font-family:var(--font-body,sans-serif);font-weight:400;font-size:15px;line-height:1.5;color:var(--tx-muted,#a1a1aa)"><?php echo esc_html($contact['description']); ?></p>
 </div>
 <div style="position:absolute;left:50%;top:71%;transform:translate(-50%,-50%);width:min(660px,90vw);pointer-events:auto">
-<?php
-$_fp = $contact['form_plugin'] ?? '';
-$_fid = intval($contact['cf7_form_id'] ?? 0);
-if ($_fp === 'fluentform' && $_fid > 0) : ?>
-<?php echo do_shortcode('[fluentform id="' . $_fid . '"]'); ?>
-<?php elseif ($_fp === 'cf7' && $_fid > 0) : ?>
-<?php echo do_shortcode('[contact-form-7 id="' . $_fid . '"]'); ?>
-<?php else : ?>
+<?php // Built-in chat form always shown; submissions mirror to Fluent Forms if configured ?>
 <div data-chat-history="true" style="display:none;position:absolute;left:0;right:0;bottom:calc(100% + 10px);flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding:14px 16px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:linear-gradient(155deg,rgba(17,17,18,.72),rgba(3,4,5,.6));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 30px 70px rgba(0,0,0,.5)"></div>
 <div data-chat-attach="true" style="display:none;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-family:var(--font-body,sans-serif);font-size:12px;color:var(--glow,#f6f5f2)"></div>
 <div data-chat="true" style="position:relative;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 10px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:linear-gradient(155deg,rgba(17,17,18,.72),rgba(3,4,5,.6));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 30px 70px rgba(0,0,0,.5)">
@@ -280,7 +273,6 @@ if ($_fp === 'fluentform' && $_fid > 0) : ?>
 <button data-chat-send="true" type="button" aria-label="Send" style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;padding:0;border:none;border-radius:999px;background:linear-gradient(150deg,var(--glow,#f6f5f2),var(--tx-faint,#6b6b73));cursor:pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-900,#030405)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"></path></svg></button>
 <input data-chat-file="true" type="file" accept="image/*,application/pdf" style="display:none">
 </div>
-<?php endif; ?>
 </div>
 <div data-sec7-footer="true" style="position:absolute;left:0;right:0;bottom:clamp(20px,3.4vh,34px);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:18px clamp(24px,5vw,72px) 0;border-top:1px solid var(--line,rgba(255,255,255,.08));flex-wrap:wrap;pointer-events:auto">
 <div><img src="<?php echo esc_url($hero['logo_url']); ?>" alt="<?php echo esc_attr($hero['first_name'] . ' ' . $hero['last_name']); ?>" loading="lazy" style="height:47px;width:auto;display:block"></div>

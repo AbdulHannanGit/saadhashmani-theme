@@ -32,7 +32,7 @@ $socials = [
 <h3>Contact Form Integration</h3>
 <?php $fp = $ct['form_plugin'] ?? ''; ?>
 <div class="sh-field">
-    <label>Form Plugin <span class="sh-tooltip" data-tip="Choose which form plugin to use. Install the plugin first, create a form, then select it below.">&#8505;</span></label>
+    <label>Form Plugin <span class="sh-tooltip" data-tip="Submissions from the built-in chat form will be mirrored into this plugin's entries. Install the plugin first, create a form with matching fields, then select it below.">&#8505;</span></label>
     <select name="sh[contact][form_plugin]">
         <option value="" <?php selected($fp, ''); ?>>Use built-in chat form</option>
         <option value="fluentform" <?php selected($fp, 'fluentform'); ?>>Fluent Forms</option>
@@ -40,7 +40,7 @@ $socials = [
     </select>
 </div>
 <div class="sh-field">
-    <label>Form <span class="sh-tooltip" data-tip="Select a form from your chosen plugin. It replaces the built-in chat widget in the Contact section.">&#8505;</span></label>
+    <label>Form <span class="sh-tooltip" data-tip="Select the form to mirror submissions into. Create it with fields: Name, Email, Message, Type (dropdown).">&#8505;</span></label>
     <select name="sh[contact][cf7_form_id]">
         <option value="0">-- Select a form --</option>
         <?php

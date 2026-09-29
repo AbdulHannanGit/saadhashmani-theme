@@ -125,10 +125,33 @@ function sh_contact_submit() {
     ]);
 
     if ($result) {
-        $to = get_option('admin_email');
-        $subject = "New contact from $name";
-        $body = "Name: $name\nEmail: $email\nType: $type\n\nMessage:\n$message";
-        wp_mail($to, $subject, $body);
+        $ct = sh_get('contact');
+        $fp = $ct['form_plugin'] ?? '';
+        $fid = intval($ct['cf7_form_id'] ?? 0);
+
+        if ($fp === 'fluentform' && $fid > 0 && defined('FLUENTFORM')) {
+            $entry = [
+                'form_id'       => $fid,
+                'serial_number' => fluentFormApi('submissions')->getNextEntrySerialNumber($fid),
+                'response'      => json_encode(['names' => $name, 'email' => $email, 'message' => $message, 'inquiry_type' => $type]),
+                'source_url'    => home_url(),
+                'user_id'       => get_current_user_id(),
+                'status'        => 'unread',
+                'created_at'    => current_time('mysql'),
+                'updated_at'    => current_time('mysql'),
+            ];
+            $wpdb->insert($wpdb->prefix . 'fluentform_submissions', $entry);
+            $insertId = $wpdb->insert_id;
+            if ($insertId) {
+                do_action('fluentform/submission_inserted', $insertId, [], $fid);
+            }
+        } else {
+            $to = get_option('admin_email');
+            $subject = "New contact from $name";
+            $body = "Name: $name\nEmail: $email\nType: $type\n\nMessage:\n$message";
+            wp_mail($to, $subject, $body);
+        }
+
         wp_send_json_success(['id' => $wpdb->insert_id]);
     } else {
         wp_send_json_error(['error' => 'Database error'], 500);
