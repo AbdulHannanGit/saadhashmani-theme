@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-define('SH_VERSION', '2.0.0');
+define('SH_VERSION', '2.1.0');
 define('SH_DIR', get_template_directory());
 define('SH_URI', get_template_directory_uri());
 
