@@ -77,14 +77,14 @@ function init() {
     window.addEventListener('pointermove', self.onArrowPtr, { passive: true });
     window.addEventListener('pointerleave', self.onArrowLeave, { passive: true });
     self.bindKeys();
-    self.bootContent();
+    try { self.bootContent(); } catch (e) { console.error('bootContent error:', e); }
 
     self.onResize = () => { self.layout(); self.pbs && self.pbs.forEach(p => self.layoutPb(p)); self.handle(self.readY()); if (self.headEl) { self.headEl._hRect = self.headEl.getBoundingClientRect(); if (self.headEl._clone) self.headEl._clone.style.width = self.headEl._hRect.width + 'px'; } };
     window.addEventListener('resize', self.onResize, { passive: true });
 
-    const frame = (now) => { const dt = self._lastFrameT != null ? Math.min(0.05, (now - self._lastFrameT) / 1000) : 0; self._lastFrameT = now; self.renderFrame(dt); self.tickPlaybook(now); self.tickPods(); self.tickTestis(); self.tickCollage(); self.tickArrowMagnet(); self.tickMenu(); if (self.cur) self.tickCursor(); self.raf = requestAnimationFrame(frame); };    self.raf = requestAnimationFrame(frame);
+    const frame = (now) => { const dt = self._lastFrameT != null ? Math.min(0.05, (now - self._lastFrameT) / 1000) : 0; self._lastFrameT = now; try { self.renderFrame(dt); self.tickPlaybook(now); self.tickPods(); self.tickTestis(); self.tickCollage(); self.tickArrowMagnet(); self.tickMenu(); if (self.cur) self.tickCursor(); } catch (e) {} self.raf = requestAnimationFrame(frame); };    self.raf = requestAnimationFrame(frame);
 
-    self.handle(0);
+    try { self.handle(0); } catch (e) { console.error('handle(0) error:', e); }
     self.runPreloader();
     self.initCursor();
   }
@@ -525,30 +525,33 @@ function runPreloader() {
   }
 
 function preload() {
-    const imgTask = (src) => new Promise((res) => { const im = new Image(); im.onload = im.onerror = () => res(); im.decoding = 'async'; im.src = src; setTimeout(res, 7000); });
-    const tasks = [];
-    // Priority 0 - the logo mark, since it renders above the fold in the header immediately.
-    if (_hero.logo_url) tasks.push(imgTask(_hero.logo_url));
-    if (self.stageVideo) tasks.push(new Promise((res) => {
-      const v = self.stageVideo;
-      if (v.readyState >= 3) return res();
-      const done = () => { v.removeEventListener('canplay', done); v.removeEventListener('canplaythrough', done); v.removeEventListener('error', done); res(); };
-      v.addEventListener('canplay', done, { once: true });
-      v.addEventListener('canplaythrough', done, { once: true });
-      v.addEventListener('error', done, { once: true });
-      try { v.preload = 'auto'; v.load(); } catch (e) {}
-      setTimeout(done, 9000);
-    }));
-    if (_hero.poster_url) tasks.push(imgTask(_hero.poster_url));
-    var venData = _sec.ventures || [];
-    if (venData.length > 0 && venData[0].gallery_thumbs) {
-      venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
-    }
-    const total = tasks.length; let done = 0;
+    var imgTask = function(src) { return new Promise(function(res) { if (!src) return res(); var im = new Image(); im.onload = im.onerror = function() { res(); }; im.decoding = 'async'; im.src = src; setTimeout(res, 7000); }); };
+    var tasks = [];
+    try {
+      if (_hero.logo_url) tasks.push(imgTask(_hero.logo_url));
+      if (self.stageVideo) tasks.push(new Promise(function(res) {
+        var v = self.stageVideo;
+        if (v.readyState >= 3) return res();
+        var cb = function() { v.removeEventListener('canplay', cb); v.removeEventListener('canplaythrough', cb); v.removeEventListener('error', cb); res(); };
+        v.addEventListener('canplay', cb, { once: true });
+        v.addEventListener('canplaythrough', cb, { once: true });
+        v.addEventListener('error', cb, { once: true });
+        try { v.preload = 'auto'; v.load(); } catch (e) {}
+        setTimeout(cb, 9000);
+      }));
+      if (_hero.poster_url) tasks.push(imgTask(_hero.poster_url));
+      var venData = _sec.ventures || [];
+      if (venData.length > 0 && venData[0].gallery_thumbs) {
+        venData[0].gallery_thumbs.slice(0, 2).forEach(function(u) { if (u) tasks.push(imgTask(u)); });
+      }
+    } catch (e) {}
+    var total = tasks.length; var loaded = 0;
     self._preMinUntil = performance.now() + (total ? 5000 : 1800);
-    return new Promise((resolve) => {
+    return new Promise(function(resolve) {
       if (!total) { self._preTarget = 1; return resolve(); }
-      tasks.forEach((t) => t.then(() => { done++; self._preTarget = done / total; if (done >= total) resolve(); }));
+      // Hard fallback: if tasks hang beyond 12s, force-resolve
+      setTimeout(function() { if (loaded < total) { self._preTarget = 1; resolve(); } }, 12000);
+      tasks.forEach(function(t) { t.then(function() { loaded++; self._preTarget = loaded / total; if (loaded >= total) resolve(); }); });
     });
   }
 
