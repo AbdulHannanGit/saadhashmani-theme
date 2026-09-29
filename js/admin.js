@@ -265,12 +265,13 @@
             }
 
             function applySettings() {
-                if (!Object.keys(allIdMap).length) {
-                    logLine($log, 'No files were imported — settings unchanged.', 'fail');
+                var mapKeys = Object.keys(allIdMap);
+                if (!mapKeys.length) {
+                    logLine($log, 'No files were imported or found — settings unchanged.', 'fail');
                     finish();
                     return;
                 }
-                logLine($log, 'Applying ' + Object.keys(allIdMap).length + ' media references to settings...', 'info');
+                logLine($log, 'Linking ' + mapKeys.length + ' media files to theme settings...', 'info');
                 $.ajax({
                     url: shAdmin.ajaxUrl,
                     type: 'POST',
@@ -297,7 +298,7 @@
             function finish() {
                 var summary = 'Done — ' + imported + ' imported, ' + skipped + ' already existed, ' + failed + ' failed.';
                 logLine($log, summary, 'done');
-                if (imported > 0) logLine($log, 'Reload the page to see changes.', 'done');
+                if (imported > 0 || skipped > 0) logLine($log, 'Reload the page to see changes.', 'done');
                 $btn.prop('disabled', false);
                 $spinner.removeClass('is-active');
             }

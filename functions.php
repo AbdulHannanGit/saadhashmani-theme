@@ -79,6 +79,12 @@ remove_action('wp_head', 'wp_generator');
 remove_action('wp_head', 'wlwmanifest_link');
 remove_action('wp_head', 'rsd_link');
 
+add_filter('upload_mimes', function ($mimes) {
+    $mimes['mp4'] = 'video/mp4';
+    $mimes['webm'] = 'video/webm';
+    return $mimes;
+});
+
 function sh_contact_submit() {
     check_ajax_referer('sh_contact', 'nonce');
 
