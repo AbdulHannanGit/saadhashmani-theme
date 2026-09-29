@@ -202,40 +202,26 @@ elseif ($sub === 'playbook'):
         <input type="text" name="sh[playbook][heading]" value="<?php echo esc_attr($pb['heading']); ?>" class="regular-text" style="width:100%">
     </div>
 
-    <h4>Principles <span class="sh-tooltip" data-tip="Accordion principles displayed in the playbook.">&#8505;</span></h4>
+    <h4>Principles <span class="sh-tooltip" data-tip="Each principle has a title, description, open/locked toggle, thumbnail image, and optional Instagram Reel ID for the embed popup.">&#8505;</span></h4>
     <div class="sh-repeater" data-group="playbook-principles">
         <?php foreach ($pb['principles'] as $pi => $p): ?>
         <div class="sh-repeater-item">
             <div class="sh-field sh-field-inline">
-                <input type="text" name="sh[playbook][principles][<?php echo $pi; ?>][t]" value="<?php echo esc_attr($p['t']); ?>" placeholder="Title" style="width:60%">
+                <input type="text" name="sh[playbook][principles][<?php echo $pi; ?>][t]" value="<?php echo esc_attr($p['t']); ?>" placeholder="Title" style="width:50%">
                 <label style="margin-left:12px">
                     <input type="hidden" name="sh[playbook][principles][<?php echo $pi; ?>][open]" value="0">
-                    <input type="checkbox" name="sh[playbook][principles][<?php echo $pi; ?>][open]" value="1" <?php checked($p['open']); ?>> Open
+                    <input type="checkbox" name="sh[playbook][principles][<?php echo $pi; ?>][open]" value="1" <?php checked(!empty($p['open'])); ?>> Open
                 </label>
+                <input type="text" name="sh[playbook][principles][<?php echo $pi; ?>][embed]" value="<?php echo esc_attr($p['embed'] ?? ''); ?>" placeholder="Reel ID (e.g. DddfD5cRyky)" style="width:25%;margin-left:8px">
             </div>
             <div class="sh-field">
                 <textarea name="sh[playbook][principles][<?php echo $pi; ?>][d]" rows="2" style="width:100%" placeholder="Description"><?php echo esc_textarea($p['d']); ?></textarea>
             </div>
-            <button type="button" class="button sh-repeater-remove">Remove</button>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <button type="button" class="button sh-repeater-add" data-group="playbook-principles">+ Add Principle</button>
-
-    <h4>Reels <span class="sh-tooltip" data-tip="Instagram reels displayed in the playbook.">&#8505;</span></h4>
-    <div class="sh-repeater" data-group="playbook-reels">
-        <?php foreach ($pb['reels'] as $ri => $rl): ?>
-        <div class="sh-repeater-item">
-            <div class="sh-field sh-field-inline">
-                <input type="text" name="sh[playbook][reels][<?php echo $ri; ?>][t]" value="<?php echo esc_attr($rl['t']); ?>" placeholder="Title" style="width:50%">
-                <input type="text" name="sh[playbook][reels][<?php echo $ri; ?>][embed]" value="<?php echo esc_attr($rl['embed']); ?>" placeholder="Reel ID" style="width:30%">
-                <span class="sh-tooltip" data-tip="Instagram Reel ID, e.g. DddfD5cRyky">&#8505;</span>
-            </div>
             <div class="sh-field">
-                <label>Image</label>
+                <label>Thumbnail</label>
                 <div class="sh-media-field">
-                    <input type="hidden" name="sh[playbook][reels][<?php echo $ri; ?>][img]" value="<?php echo esc_attr($rl['img']); ?>" class="sh-media-id">
-                    <div class="sh-media-preview"><?php if ($u = sh_img($rl['img'], 'thumbnail')): ?><img src="<?php echo esc_url($u); ?>"><?php endif; ?></div>
+                    <input type="hidden" name="sh[playbook][principles][<?php echo $pi; ?>][img]" value="<?php echo esc_attr($p['img'] ?? 0); ?>" class="sh-media-id">
+                    <div class="sh-media-preview"><?php if ($u = sh_img($p['img'] ?? 0, 'thumbnail')): ?><img src="<?php echo esc_url($u); ?>"><?php endif; ?></div>
                     <button type="button" class="button sh-media-btn">Upload</button>
                     <button type="button" class="button sh-media-remove">Remove</button>
                 </div>
@@ -244,7 +230,7 @@ elseif ($sub === 'playbook'):
         </div>
         <?php endforeach; ?>
     </div>
-    <button type="button" class="button sh-repeater-add" data-group="playbook-reels">+ Add Reel</button>
+    <button type="button" class="button sh-repeater-add" data-group="playbook-principles">+ Add Principle</button>
 
 <?php
 // ── The Podcast ──

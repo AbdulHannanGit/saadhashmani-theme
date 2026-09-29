@@ -999,14 +999,9 @@ function wireTimelineModal() {
   }
 
 function buildPlaybook() {
-    const principleTopics = (_sec.playbook && _sec.playbook.principles) || [];
-    const videoTopics = (_sec.playbook && _sec.playbook.reels) || [];
-    videoTopics.forEach(r => { r.open = true; });
-    var closedPrinciples = principleTopics.filter(p => !p.open);
-    var openPrinciples = principleTopics.filter(p => p.open);
-    closedPrinciples.forEach(p => { p.img = videoTopics.length ? videoTopics[Math.floor(Math.random() * videoTopics.length)].img : ''; p.embed = null; });
-    openPrinciples.forEach(p => { if (!p.img) p.img = videoTopics.length ? videoTopics[Math.floor(Math.random() * videoTopics.length)].img : ''; if (!p.embed) p.embed = null; });
-    self.pbTopics = videoTopics.concat(openPrinciples, closedPrinciples);
+    self.pbTopics = ((_sec.playbook && _sec.playbook.principles) || []).map(function(p) {
+      return { t: p.t, d: p.d || '', open: !!p.open, img: p.img || '', embed: p.embed || '' };
+    });
     self.pbs = [];
     for (let i = self.pbTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = self.pbTopics[i]; self.pbTopics[i] = self.pbTopics[j]; self.pbTopics[j] = t; }
     if (self.sec4) self.pbs.push(self.makePlaybook(self.sec4, 3));
@@ -1195,7 +1190,7 @@ function fillPbCard(inst, i) {
     inst.mediaImg.style.display = 'block';
     if (tp.img) inst.mediaImg.src = tp.img; else inst.mediaImg.removeAttribute('src');
     inst.mediaImg.style.filter = tp.open ? 'none' : 'blur(10px) brightness(.65)';
-    inst.mediaPlay.style.display = 'flex';
+    inst.mediaPlay.style.display = (tp.open && tp.embed) ? 'flex' : (tp.open ? 'none' : 'flex');
     inst.mediaPlay.style.cursor = tp.open ? 'pointer' : 'default';
     if (tp.open) {
       inst.mediaIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
