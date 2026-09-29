@@ -259,8 +259,13 @@ foreach ($all_stats as $as) : ?>
 <p style="margin:14px 0 0;font-family:var(--font-body,sans-serif);font-weight:400;font-size:15px;line-height:1.5;color:var(--tx-muted,#a1a1aa)"><?php echo esc_html($contact['description']); ?></p>
 </div>
 <div style="position:absolute;left:50%;top:71%;transform:translate(-50%,-50%);width:min(660px,90vw);pointer-events:auto">
-<?php if (!empty($contact['cf7_form_id']) && $contact['cf7_form_id'] > 0) : ?>
-<?php echo do_shortcode('[contact-form-7 id="' . intval($contact['cf7_form_id']) . '"]'); ?>
+<?php
+$_fp = $contact['form_plugin'] ?? '';
+$_fid = intval($contact['cf7_form_id'] ?? 0);
+if ($_fp === 'fluentform' && $_fid > 0) : ?>
+<?php echo do_shortcode('[fluentform id="' . $_fid . '"]'); ?>
+<?php elseif ($_fp === 'cf7' && $_fid > 0) : ?>
+<?php echo do_shortcode('[contact-form-7 id="' . $_fid . '"]'); ?>
 <?php else : ?>
 <div data-chat-history="true" style="display:none;position:absolute;left:0;right:0;bottom:calc(100% + 10px);flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding:14px 16px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:linear-gradient(155deg,rgba(17,17,18,.72),rgba(3,4,5,.6));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 30px 70px rgba(0,0,0,.5)"></div>
 <div data-chat-attach="true" style="display:none;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-family:var(--font-body,sans-serif);font-size:12px;color:var(--glow,#f6f5f2)"></div>

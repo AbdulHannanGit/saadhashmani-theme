@@ -29,21 +29,31 @@ $socials = [
 </div>
 <?php endforeach; ?>
 
-<h3>Contact Form 7 Integration</h3>
+<h3>Contact Form Integration</h3>
+<?php $fp = $ct['form_plugin'] ?? ''; ?>
 <div class="sh-field">
-    <label>CF7 Form <span class="sh-tooltip" data-tip="Select a Contact Form 7 form to replace the built-in chat widget in the Contact section. Install CF7 plugin to see available forms.">&#8505;</span></label>
+    <label>Form Plugin <span class="sh-tooltip" data-tip="Choose which form plugin to use. Install the plugin first, create a form, then select it below.">&#8505;</span></label>
+    <select name="sh[contact][form_plugin]">
+        <option value="" <?php selected($fp, ''); ?>>Use built-in chat form</option>
+        <option value="fluentform" <?php selected($fp, 'fluentform'); ?>>Fluent Forms</option>
+        <option value="cf7" <?php selected($fp, 'cf7'); ?>>Contact Form 7</option>
+    </select>
+</div>
+<div class="sh-field">
+    <label>Form <span class="sh-tooltip" data-tip="Select a form from your chosen plugin. It replaces the built-in chat widget in the Contact section.">&#8505;</span></label>
     <select name="sh[contact][cf7_form_id]">
-        <option value="0" <?php selected($ct['cf7_form_id'], 0); ?>>Use built-in chat form</option>
+        <option value="0">-- Select a form --</option>
         <?php
-        if (post_type_exists('wpcf7_contact_form')) {
+        if ($fp === 'cf7' && post_type_exists('wpcf7_contact_form')) {
             $forms = get_posts(['post_type' => 'wpcf7_contact_form', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
             foreach ($forms as $form) {
-                printf(
-                    '<option value="%d" %s>%s</option>',
-                    $form->ID,
-                    selected($ct['cf7_form_id'], $form->ID, false),
-                    esc_html($form->post_title)
-                );
+                printf('<option value="%d" %s>%s</option>', $form->ID, selected($ct['cf7_form_id'], $form->ID, false), esc_html($form->post_title));
+            }
+        } elseif ($fp === 'fluentform' && defined('FLUENTFORM')) {
+            global $wpdb;
+            $ff = $wpdb->get_results("SELECT id, title FROM {$wpdb->prefix}fluentform_forms ORDER BY title ASC");
+            if ($ff) foreach ($ff as $f) {
+                printf('<option value="%d" %s>%s</option>', $f->id, selected($ct['cf7_form_id'], $f->id, false), esc_html($f->title));
             }
         }
         ?>
