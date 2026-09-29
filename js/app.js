@@ -1892,14 +1892,18 @@ function postSubmission() {
       fd.append('action', 'sh_contact');
       fd.append('nonce', (window.shTheme && window.shTheme.nonce) || '');
       var ajaxUrl = (window.shTheme && window.shTheme.ajaxUrl) || 'submit.php';
+      var rcSite = (window.shTheme && window.shTheme.contact && window.shTheme.contact.recaptcha_site) || '';
       const send = () => fetch(ajaxUrl, { method: 'POST', body: fd }).catch(() => {});
+      const doSend = rcSite && window.grecaptcha
+        ? function() { window.grecaptcha.ready(function() { window.grecaptcha.execute(rcSite, { action: 'contact' }).then(function(token) { fd.append('recaptcha_token', token); send(); }).catch(send); }); }
+        : send;
       if (att && att.dataUrl) {
         fetch(att.dataUrl).then((r) => r.blob()).then((blob) => {
           fd.append('attachment', blob, att.name || 'attachment');
-          send();
-        }).catch(send);
+          doSend();
+        }).catch(doSend);
       } else {
-        send();
+        doSend();
       }
     } catch (e) {}
   }

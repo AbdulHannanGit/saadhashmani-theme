@@ -50,6 +50,12 @@ function sh_enqueue() {
     wp_enqueue_style('sh-mobile', SH_URI . '/css/mobile.css', ['sh-style'], SH_VERSION, '(max-width:768px)');
 
     wp_enqueue_script('lenis', 'https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js', [], '1.1.18', true);
+
+    $rc_site = sh_get('contact.recaptcha_site');
+    if (!empty($rc_site)) {
+        wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . esc_attr($rc_site), [], null, true);
+    }
+
     wp_enqueue_script('sh-app', SH_URI . '/js/app.js', ['lenis'], SH_VERSION, true);
 
     $hero = sh_resolve_hero();
@@ -68,7 +74,7 @@ function sh_enqueue() {
             'receipts_stats' => sh_get('receipts.stats'),
             'collage'        => sh_resolve_collage(),
         ],
-        'contact'  => sh_get('contact'),
+        'contact'  => array_diff_key(sh_get('contact'), ['recaptcha_secret' => 1]),
     ]);
 }
 add_action('wp_enqueue_scripts', 'sh_enqueue');
@@ -95,6 +101,21 @@ function sh_contact_submit() {
 
     if (empty($name) || empty($email) || empty($message)) {
         wp_send_json_error(['error' => 'Missing required fields'], 400);
+    }
+
+    $rc_secret = sh_get('contact.recaptcha_secret');
+    if (!empty($rc_secret)) {
+        $rc_token = sanitize_text_field($_POST['recaptcha_token'] ?? '');
+        if (empty($rc_token)) {
+            wp_send_json_error(['error' => 'reCAPTCHA verification failed'], 403);
+        }
+        $rc_resp = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', [
+            'body' => ['secret' => $rc_secret, 'response' => $rc_token, 'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''],
+        ]);
+        $rc_body = json_decode(wp_remote_retrieve_body($rc_resp), true);
+        if (empty($rc_body['success']) || ($rc_body['score'] ?? 0) < 0.5) {
+            wp_send_json_error(['error' => 'Spam detected'], 403);
+        }
     }
 
     global $wpdb;

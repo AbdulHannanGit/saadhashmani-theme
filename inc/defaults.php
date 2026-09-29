@@ -255,8 +255,10 @@ function sh_defaults() {
             'description'   => 'Whether you are building a startup, exploring partnerships, or looking for practical mentorship, share your vision.',
             'email'         => 'contact@saadhashmani.com',
             'location'      => 'Houston, Texas · Access by request',
-            'form_plugin'   => '',
-            'cf7_form_id'   => 0,
+            'form_plugin'       => '',
+            'cf7_form_id'       => 0,
+            'recaptcha_site'    => '',
+            'recaptcha_secret'  => '',
             'form_types'    => ['Business inquiry', 'Review', 'General query', 'Work with me'],
             'social' => [
                 'x'         => 'https://x.com/saadahashmani',

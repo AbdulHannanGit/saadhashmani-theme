@@ -59,3 +59,13 @@ $socials = [
         ?>
     </select>
 </div>
+
+<h3>reCAPTCHA v3</h3>
+<div class="sh-field">
+    <label>Site Key <span class="sh-tooltip" data-tip="reCAPTCHA v3 site key from Google. Leave blank to disable.">&#8505;</span></label>
+    <input type="text" name="sh[contact][recaptcha_site]" value="<?php echo esc_attr($ct['recaptcha_site'] ?? ''); ?>" class="regular-text" style="width:100%">
+</div>
+<div class="sh-field">
+    <label>Secret Key <span class="sh-tooltip" data-tip="reCAPTCHA v3 secret key from Google. Never shared on the frontend.">&#8505;</span></label>
+    <input type="password" name="sh[contact][recaptcha_secret]" value="<?php echo esc_attr($ct['recaptcha_secret'] ?? ''); ?>" class="regular-text" style="width:100%">
+</div>
