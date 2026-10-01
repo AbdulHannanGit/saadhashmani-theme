@@ -187,6 +187,21 @@ function sh_view_data() {
 }
 
 /** Data app.js needs at runtime (window.shTheme). Secrets never go here. */
+/**
+ * Whether a playbook reel/principle shows on the phone wheel ("m"). Items saved before the
+ * checkbox existed have no "m" key and take the default pick, matched by title.
+ */
+function sh_pb_on_mobile($item, $list) {
+    $item = (array) $item;
+    if (array_key_exists('m', $item)) return !empty($item['m']);
+    static $picks = [];
+    if (!isset($picks[$list])) {
+        $picks[$list] = [];
+        foreach ((array) (sh_defaults()['playbook'][$list] ?? []) as $d) if (!empty($d['m'])) $picks[$list][$d['t']] = true;
+    }
+    return isset($picks[$list][$item['t'] ?? '']);
+}
+
 function sh_js_data() {
     $s = sh_settings();
     $h = $s['hero'];
@@ -200,11 +215,14 @@ function sh_js_data() {
     $reels = [];
     foreach ((array) $s['playbook']['reels'] as $r) {
         $r = wp_parse_args((array) $r, ['t' => '', 'img' => 0, 'embed' => '']);
-        $reels[] = ['t' => $r['t'], 'img' => sh_img($r['img'], 'sh-reel'), 'embed' => $r['embed']];
+        $m = sh_pb_on_mobile($r, 'reels');
+        $reels[] = ['t' => $r['t'], 'img' => sh_img($r['img'], 'sh-reel'), 'embed' => $r['embed'], 'm' => $m];
     }
     $principles = [];
     foreach ((array) $s['playbook']['principles'] as $p) {
-        if (!empty($p['t'])) $principles[] = ['t' => $p['t'], 'd' => $p['d'] ?? ''];
+        if (empty($p['t'])) continue;
+        $m = sh_pb_on_mobile($p, 'principles');
+        $principles[] = ['t' => $p['t'], 'd' => $p['d'] ?? '', 'm' => $m];
     }
     $pods = [];
     foreach ((array) $s['podcast']['episodes'] as $e) {

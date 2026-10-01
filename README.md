@@ -2,7 +2,7 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.1.2** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.1.3** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 
@@ -61,7 +61,7 @@ GSAP is never enqueued by PHP: `app.js` downloads it only when it is switched on
 | **Hero** | Eyebrow, first/last name, preloader ring text, scroll ring text, hero still, background video 480p/720p/1080p (Media Library or external URL), clip lengths |
 | **The Record** | Eyebrow, heading, stats, timeline milestones (years, title, tag, portrait image, story shown in the popup) |
 | **Ventures** | Per venture: logo, eyebrow, title, description, button label + link (`#` scrolls to Contact), 4 stats, gallery. Shared **Partners** logo list with per-logo height |
-| **The Playbook** | Eyebrow, heading, **Reels** (title, 9:16 cover, Instagram Reel ID), **Principles** (text pool), number of locked topics shown (picked at random per visit) |
+| **The Playbook** | Eyebrow, heading, **Reels** (title, 9:16 cover, Instagram Reel ID), **Principles** (text pool), number of locked topics shown on desktop (picked at random per visit), and a **Show on mobile** tick on every reel and principle (phones show only the ticked topics; 12 reels + 8 principles by default) |
 | **The Podcast** | Eyebrow, episodes (title, show, one-line description, YouTube ID, 3:4 card, 16:9 player poster) |
 | **The Receipts** | Eyebrow, heading, three stats per filter (All, Google, Instagram, Facebook, TikTok, X), filter button labels, left and right testimonial columns (platform, stars, quote, name, role, avatar, optional 16:9 photo, optional YouTube ID for a video review) |
 | **Contact** | Eyebrow, heading + faint accent, description, enquiry types, default type |

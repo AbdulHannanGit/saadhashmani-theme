@@ -103,6 +103,7 @@ case 'playbook':
     sh_field_text('playbook.eyebrow', __('Eyebrow', 'saadhashmani'), $pb['eyebrow']);
     sh_field_text('playbook.heading', __('Heading', 'saadhashmani'), $pb['heading']);
     sh_field_text('playbook.locked_count', __('Locked topics shown', 'saadhashmani'), $pb['locked_count'], __('How many principles (picked at random on each visit) appear on the wheel as locked topics next to the reels.', 'saadhashmani'), 'number', 'min="0" max="60"');
+    echo '<p class="description">' . esc_html__('Phones show a shorter wheel: only the reels and principles ticked "Show on mobile" (20 by default, mixed open and locked). Desktop shows every reel plus the locked principles above.', 'saadhashmani') . '</p>';
     echo '<h4>' . esc_html__('Reels', 'saadhashmani') . '</h4><p class="description">' . esc_html__('Open topics: a 9:16 cover and the Instagram Reel ID (the part after /reel/ in the link).', 'saadhashmani') . '</p>';
     sh_repeater('playbook.reels', $pb['reels'], function ($i, $r, $p) {
         echo '<div class="sh-grid">';
@@ -110,11 +111,13 @@ case 'playbook':
         sh_field_text("$p.embed", __('Reel ID', 'saadhashmani'), $r['embed'] ?? '');
         sh_field_media("$p.img", __('Cover', 'saadhashmani'), $r['img'] ?? 0);
         echo '</div>';
+        sh_field_check("$p.m", __('Show on mobile', 'saadhashmani'), sh_pb_on_mobile($r, 'reels'));
     }, __('Add reel', 'saadhashmani'));
     echo '<h4>' . esc_html__('Principles', 'saadhashmani') . '</h4><p class="description">' . esc_html__('Pool for the locked topics. Locked topics borrow a random reel cover.', 'saadhashmani') . '</p>';
     sh_repeater('playbook.principles', $pb['principles'], function ($i, $pr, $p) {
         sh_field_text("$p.t", __('Principle', 'saadhashmani'), $pr['t'] ?? '');
         sh_field_textarea("$p.d", __('Note (optional)', 'saadhashmani'), $pr['d'] ?? '', '', 2);
+        sh_field_check("$p.m", __('Show on mobile (as a locked topic)', 'saadhashmani'), sh_pb_on_mobile($pr, 'principles'));
     }, __('Add principle', 'saadhashmani'));
     break;
 
