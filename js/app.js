@@ -1693,12 +1693,14 @@ class App {
     if (!this.tlViewport) return;
     const track = this.tlTrack;
     if (!track) return;
+    // settle on the current drag position (on mobile that centres the active milestone), not on 0
+    const x = this.tlX || 0;
     track.style.transition = 'none';
-    track.style.transform = 'translateX(120px)';
+    track.style.transform = 'translateX(' + (x + 120) + 'px)';
     track.style.opacity = '0';
     requestAnimationFrame(() => {
       track.style.transition = 'transform 1.8s cubic-bezier(.16,1,.3,1), opacity 1.4s cubic-bezier(.16,1,.3,1)';
-      track.style.transform = 'translateX(0)';
+      track.style.transform = 'translateX(' + x + 'px)';
       track.style.opacity = '1';
     });
   }
@@ -2635,7 +2637,7 @@ class App {
     if (this.arrow) {
       this.arrow.style.transform = 'rotate(0deg)';
       this.arrow.style.top = 'auto';
-      this.arrow.style.bottom = 'clamp(28px,5vh,56px)';
+      this.arrow.style.bottom = 'clamp(28px,calc(5*var(--vh,1vh)),56px)';
     }
     if (this.sec7) this.sec7.style.pointerEvents = '';
     this.arrowState = null;

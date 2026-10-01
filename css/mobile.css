@@ -20,10 +20,12 @@
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent) !important;
   mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent) !important;
 }
+/* column spans from under the platform buttons to just above the stats, so tall cards are not clipped */
 [data-testi-col][data-side="left"] {
-  top: 50% !important;
-  bottom: auto !important;
-  margin-top: -170px !important;
+  top: calc(clamp(150px, calc(20*var(--vh,1vh)), 196px) + 58px) !important;
+  bottom: 174px !important;
+  height: auto !important;
+  margin-top: 0 !important;
 }
 [data-testi-col][data-side="right"] {
   display: none !important;
@@ -50,17 +52,17 @@
 [data-testi-card] div[style*="aspect-ratio"] {
   display: block !important;
 }
-[data-testi-card] div[style*="width:32px"][style*="height:32px"] {
+[data-testi-card] div:is([style*="width:32px"],[style*="width: 32px"]):is([style*="height:32px"],[style*="height: 32px"]) {
   width: 32px !important;
   height: 32px !important;
 }
-[data-testi-card] div[style*="font-size:14px"] {
+[data-testi-card] div:is([style*="font-size:14px"],[style*="font-size: 14px"]) {
   font-size: 14px !important;
 }
-[data-testi-card] div[style*="font-size:12px"] {
+[data-testi-card] div:is([style*="font-size:12px"],[style*="font-size: 12px"]) {
   font-size: 12px !important;
 }
-[data-testi-card] div[style*="width:26px"][style*="height:26px"] {
+[data-testi-card] div:is([style*="width:26px"],[style*="width: 26px"]):is([style*="height:26px"],[style*="height: 26px"]) {
   width: 26px !important;
   height: 26px !important;
   font-size: 9px !important;
@@ -75,7 +77,7 @@
   background: rgba(17,17,18,.82) !important;
 }
 [data-testi-stats] {
-  bottom: 150px !important;
+  bottom: 100px !important;
 }
 [data-chat] {
   flex-wrap: wrap !important;
@@ -224,10 +226,10 @@
 [data-vinner] > div:nth-child(2) > div {
   text-align: center !important;
 }
-[data-vinner] > div:nth-child(2) [style*="font-size:clamp(26px"] {
+[data-vinner] > div:nth-child(2) :is([style*="font-size:clamp(26px"],[style*="font-size: clamp(26px"]) {
   font-size: 20px !important;
 }
-[data-vinner] > div:nth-child(2) [style*="font-size:10px"] {
+[data-vinner] > div:nth-child(2) :is([style*="font-size:10px"],[style*="font-size: 10px"]) {
   font-size: 9px !important;
   margin-top: 4px !important;
 }
@@ -238,7 +240,7 @@
 /* 3: desc + CTA — order 3 */
 [data-vinner] > div:nth-child(3) {
   order: 3 !important;
-  margin-bottom: 50px !important;
+  margin-bottom: 24px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -250,7 +252,7 @@
 [data-vinner] > div:nth-child(4) {
   order: 4 !important;
   align-items: center !important;
-  margin-bottom: 60px !important;
+  margin-bottom: 0 !important;
 }
 [data-vgallery] {
   width: 100% !important;
@@ -272,7 +274,7 @@
   top: 12px !important;
   bottom: auto !important;
   transform: none !important;
-  max-height: 44vh !important;
+  max-height: calc(44*var(--vh,1vh)) !important;
   overflow-y: auto !important;
   background: none !important;
   backdrop-filter: none !important;
@@ -283,7 +285,7 @@
 /* Video placeholder: smaller 9:16 to fit space */
 [data-sec4] [data-pb-media] {
   aspect-ratio: 9/16 !important;
-  max-height: 34vh !important;
+  max-height: calc(34*var(--vh,1vh)) !important;
   height: auto !important;
   width: auto !important;
   margin: 0 auto !important;
@@ -320,15 +322,16 @@
   border-radius: 10px !important;
 }
 [data-pod-stage] {
-  top: calc(clamp(48px, 6vh, 86px) + 120px) !important;
+  top: calc(clamp(48px, calc(6*var(--vh,1vh)), 86px) + 120px) !important;
 }
-/* title block lifted 24px to clear the raised controls */
+/* title block sits 16px above the player controls and grows upward */
 [data-sec5] > div:has(> [data-pod-title]) {
-  top: calc(clamp(348px, 56vh, 600px) - 24px) !important;
+  top: auto !important;
+  bottom: calc(clamp(40px, calc(8*var(--vh,1vh)), 80px) + 172px) !important;
 }
 /* player controls + progress bar sit 40px higher */
 [data-sec5] > div:has([data-pod-play]) {
-  bottom: calc(clamp(40px, 8vh, 80px) + 40px) !important;
+  bottom: calc(clamp(40px, calc(8*var(--vh,1vh)), 80px) + 40px) !important;
 }
 [data-pod-desc] {
   white-space: normal !important;
@@ -353,7 +356,7 @@
 [data-sec3] > div:last-child {
   left: 16px !important;
   top: auto !important;
-  bottom: 46px !important;
+  bottom: 22px !important;
   transform: none !important;
   flex-direction: row !important;
   align-items: center !important;
@@ -398,9 +401,9 @@
 }
 
 /* === SECTION 2: TIMELINE === */
-/* timeline raised so the milestone photo sits at the vertical centre (photo centre is 188px above the timeline's bottom) */
+/* timeline raised so the milestone photo sits just below the vertical centre (photo centre is 188px above the timeline's bottom) */
 [data-tl] {
-  bottom: calc(50vh - 188px) !important;
+  bottom: calc(calc(50*var(--vh,1vh)) - 212px) !important;
 }
 /* stats in one compact row so the centred photo has room above the timeline */
 [data-sec2] div[style*="min-width: 130px"] {
@@ -431,10 +434,10 @@
 /* === TIMELINE MODAL (mobile): image top, content bottom === */
 [data-tl-modal-card] {
   grid-template-columns: 1fr !important;
-  grid-template-rows: 40vh 1fr !important;
+  grid-template-rows: calc(40*var(--vh,1vh)) 1fr !important;
   width: 100% !important;
   height: 100% !important;
-  max-height: 100vh !important;
+  max-height: calc(100*var(--vh,1vh)) !important;
   border-radius: 0 !important;
   border: none !important;
 }
@@ -449,6 +452,23 @@
 
 /* 11px floor for functional labels */
 @media (max-width:768px){
-[data-testi-card] div[style*="width:26px"][style*="height:26px"]{font-size:11px!important;letter-spacing:0!important}
-[data-menu] nav a[data-menu-link] span:first-child,[data-sec3] [data-vdot] [data-vdot-n],[data-vinner] > div:nth-child(2) [style*="font-size:11px"]{font-size:11px!important}
+[data-testi-card] div:is([style*="width:26px"],[style*="width: 26px"]):is([style*="height:26px"],[style*="height: 26px"]){font-size:11px!important;letter-spacing:0!important}
+[data-menu] nav a[data-menu-link] span:first-child,[data-sec3] [data-vdot] [data-vdot-n],[data-vinner] > div:nth-child(2) :is([style*="font-size:11px"],[style*="font-size: 11px"]){font-size:11px!important}
+}
+
+/* Short phones (under ~720px of visible height, e.g. Safari with both toolbars): tighten type and gaps so blocks keep clear of each other */
+@media (max-height:720px){
+[data-sec2] h2{font-size:28px!important}
+[data-sec2] div:is([style*="min-width:130px"],[style*="min-width: 130px"]) > div:first-child{font-size:21px!important}
+[data-tl]{bottom:calc(calc(50*var(--vh,1vh)) - 232px)!important}
+[data-vinner]{padding-top:58px!important;gap:10px!important}
+[data-vinner] > div:nth-child(1) h2{font-size:28px!important}
+[data-vinner] > div:nth-child(1){margin-bottom:0!important}
+[data-vinner] > div:nth-child(2){margin-bottom:4px!important}
+[data-vinner] > div:nth-child(3){margin-bottom:8px!important}
+[data-vinner] > div:nth-child(3) p{font-size:12px!important;line-height:1.5!important;margin-bottom:10px!important}
+[data-sec3] > div:last-child{bottom:14px!important}
+[data-sec3] [data-vprev],[data-sec3] [data-vnext]{width:44px!important;height:44px!important}
+[data-pod-title]{font-size:24px!important}
+[data-pod-desc]{font-size:13px!important}
 }
