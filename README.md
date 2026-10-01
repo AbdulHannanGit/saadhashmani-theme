@@ -2,7 +2,7 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.1.0** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.1.2** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 
@@ -122,6 +122,7 @@ Attachments (images, PDF, Office documents, text; max 10 MB) go through WordPres
 - No server-side device detection, so full-page caching is safe.
 - Per-frame work only for the section on screen: the Playbook wheel, podcast ring and testimonials stop animating while hidden, and style properties are written only when their value changes.
 - Phone address-bar resizes are ignored (the stage is fixed), so they never re-lay out the page mid-transition.
+- Because the page never pans, mobile browsers keep their address bar showing. Layout heights therefore use `var(--vh)`, which is `1svh` (the visible height with toolbars shown) where supported and `1vh` otherwise. Plain `vh` in Chrome on Android measures as if the bar were hidden, about 56px taller than what is visible. Use `calc(N*var(--vh,1vh))` rather than `Nvh` in new templates. `css/mobile.css` also has a short-screen block (`max-height:720px`).
 - The background video downloads with high priority; every other image is `fetchpriority="low"` so it never competes with the video, the hero still or the fonts.
 
 ## File structure

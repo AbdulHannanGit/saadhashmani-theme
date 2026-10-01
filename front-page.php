@@ -18,7 +18,7 @@ get_template_part('template-parts/section-podcast', null, $v);
 get_template_part('template-parts/section-receipts', null, $v);
 get_template_part('template-parts/section-contact', null, $v);
 ?>
-<div data-spacer="true" style="height:1090vh"></div>
+<div data-spacer="true" style="height:calc(1090*var(--vh,1vh))"></div>
 </main>
 <?php
 get_template_part('template-parts/overlays', null, $v);

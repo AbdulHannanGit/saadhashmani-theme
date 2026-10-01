@@ -1183,14 +1183,13 @@ class App {
     if (inst._gtf !== gtf) { inst._gtf = gtf; inst.group.style.transform = gtf; }
     for (let i = 0; i < inst.items.length; i++) {
       const it = inst.items[i];
-      const abs = ((it.base + inst.rot) % 360 + 360) % 360;
-      const left = abs > 90 && abs < 270;
+      // every topic reads from its dot outwards, like rays (no 180° flip on the left half)
       const breath = 8 + Math.sin(t * 0.9 + it.phase) * 4;
       const hov = inst.hover === i, sel = inst.selected === i;
       const sc = hov ? 1.28 : sel ? 1.18 : 1;
       const st = it.span.style, sv = it._sv || (it._sv = {});
-      const org = left ? '50% 50%' : '0 50%';
-      const tf = 'translateX(' + breath.toFixed(1) + 'px)' + (left ? ' rotate(180deg)' : '') + ' scale(' + sc + ')';
+      const org = '0 50%';
+      const tf = 'translateX(' + breath.toFixed(1) + 'px) scale(' + sc + ')';
       const col = it.open ? 'var(--glow,#f6f5f2)' : (hov ? 'var(--glow,#f6f5f2)' : 'rgba(244,244,245,.34)');
       const op = (it.open || hov || sel) ? '1' : '0.85';
       const sh = (it.open && (hov || sel)) ? '0 0 18px rgba(255,255,255,.24)' : 'none';
@@ -1693,12 +1692,14 @@ class App {
     if (!this.tlViewport) return;
     const track = this.tlTrack;
     if (!track) return;
+    // settle on the current drag position (on mobile that centres the active milestone), not on 0
+    const x = this.tlX || 0;
     track.style.transition = 'none';
-    track.style.transform = 'translateX(120px)';
+    track.style.transform = 'translateX(' + (x + 120) + 'px)';
     track.style.opacity = '0';
     requestAnimationFrame(() => {
       track.style.transition = 'transform 1.8s cubic-bezier(.16,1,.3,1), opacity 1.4s cubic-bezier(.16,1,.3,1)';
-      track.style.transform = 'translateX(0)';
+      track.style.transform = 'translateX(' + x + 'px)';
       track.style.opacity = '1';
     });
   }
@@ -2262,6 +2263,7 @@ class App {
 
   bindArrow() {
     this.arrow.addEventListener('click', () => {
+      if (this.isMobile()) this._arrowPeekUntil = performance.now() + 1600;
       // ≥3s glide so a one-tap jump plays the transition at a readable pace
       if (this.currentSection >= this.N - 1 && !this.inTrans) {
         if (!this._homeScrollActive) this._enterHomeScroll();
@@ -2286,7 +2288,12 @@ class App {
     if (this.autoReturn || this.inLoop) return;
     const stuck = !!this.arrowStuck;
     let curveTarget = 1, tx = 0, ty = 0;
-    if (stuck) {
+    if (stuck && this.isMobile()) {
+      // phones have no hover magnet: park the bare arrow in the corner; after a tap it eases up-left
+      // with its rotating ring for a moment, then tucks back
+      if (performance.now() < (this._arrowPeekUntil || 0)) { tx = -10; ty = -10; }
+      else { curveTarget = 0; tx = 40; ty = 34; }
+    } else if (stuck) {
       curveTarget = 0;
       if (this.mouse.on) {
         const r = this.arrow.getBoundingClientRect();
@@ -2635,7 +2642,7 @@ class App {
     if (this.arrow) {
       this.arrow.style.transform = 'rotate(0deg)';
       this.arrow.style.top = 'auto';
-      this.arrow.style.bottom = 'clamp(28px,5vh,56px)';
+      this.arrow.style.bottom = 'clamp(28px,calc(5*var(--vh,1vh)),56px)';
     }
     if (this.sec7) this.sec7.style.pointerEvents = '';
     this.arrowState = null;
