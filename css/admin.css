@@ -246,3 +246,23 @@ fieldset legend {
     line-height: 1.8;
     color: #2c3338;
 }
+
+/* 3.x layout helpers */
+.sh-wide { width: 100%; max-width: 720px; }
+.sh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 20px; }
+.sh-grid .sh-wide { max-width: none; }
+.sh-indent { margin-left: 26px; }
+.sh-indent .sh-field { margin-bottom: 6px; }
+.sh-field label.sh-check { font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.sh-or { margin: 0 10px; color: #646970; }
+.sh-video-field { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.sh-video-field .sh-video-url { flex: 1; min-width: 240px; }
+.sh-fieldset { border: 1px solid #dcdcde; border-radius: 4px; padding: 10px 14px 0; margin: 0 0 14px; }
+.sh-fieldset legend { font-weight: 600; padding: 0 6px; }
+.sh-item-title { margin: 0 0 12px; }
+.sh-item-num { color: #8c8f94; font-weight: 400; }
+.sh-repeater-item { background: #fff; border: 1px solid #dcdcde; border-radius: 4px; padding: 14px 16px 4px; margin-bottom: 12px; }
+.sh-repeater-remove { color: #b32d2e !important; }
+.sh-media-preview code { display: inline-block; padding: 4px 6px; }
+.sh-demo-log { max-height: 320px; overflow: auto; background: #f6f7f7; border: 1px solid #dcdcde; padding: 10px; font: 12px/1.6 Menlo, Consolas, monospace; }
+.sh-log-ok { color: #00a32a; } .sh-log-skip { color: #996800; } .sh-log-fail { color: #d63638; } .sh-log-done { color: #1d2327; font-weight: 600; } .sh-log-info { color: #50575e; }
