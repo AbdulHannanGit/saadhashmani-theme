@@ -320,7 +320,15 @@
   border-radius: 10px !important;
 }
 [data-pod-stage] {
-  top: calc(clamp(48px, 6vh, 86px) + 20px) !important;
+  top: calc(clamp(48px, 6vh, 86px) + 120px) !important;
+}
+/* title block lifted 24px to clear the raised controls */
+[data-sec5] > div:has(> [data-pod-title]) {
+  top: calc(clamp(348px, 56vh, 600px) - 24px) !important;
+}
+/* player controls + progress bar sit 40px higher */
+[data-sec5] > div:has([data-pod-play]) {
+  bottom: calc(clamp(40px, 8vh, 80px) + 40px) !important;
 }
 [data-pod-desc] {
   white-space: normal !important;
@@ -390,6 +398,23 @@
 }
 
 /* === SECTION 2: TIMELINE === */
+/* timeline raised so the milestone photo sits at the vertical centre (photo centre is 188px above the timeline's bottom) */
+[data-tl] {
+  bottom: calc(50vh - 188px) !important;
+}
+/* stats in one compact row so the centred photo has room above the timeline */
+[data-sec2] div[style*="min-width: 130px"] {
+  min-width: 0 !important;
+  padding: 0 6px !important;
+}
+[data-sec2] div[style*="min-width: 130px"] > div:first-child {
+  font-size: 24px !important;
+}
+[data-sec2] div[style*="min-width: 130px"] > div:last-child {
+  margin-top: 8px !important;
+  font-size: 10px !important;
+  letter-spacing: .06em !important;
+}
 /* Remove left/right edge shadows */
 [data-tl-viewport] {
   -webkit-mask-image: none !important;
@@ -420,4 +445,10 @@
   top: 12px !important;
   right: 12px !important;
   z-index: 10 !important;
+}
+
+/* 11px floor for functional labels */
+@media (max-width:768px){
+[data-testi-card] div[style*="width:26px"][style*="height:26px"]{font-size:11px!important;letter-spacing:0!important}
+[data-menu] nav a[data-menu-link] span:first-child,[data-sec3] [data-vdot] [data-vdot-n],[data-vinner] > div:nth-child(2) [style*="font-size:11px"]{font-size:11px!important}
 }

@@ -1,19 +1,12 @@
-<?php if (!defined('ABSPATH')) exit;
-$json = json_encode(sh_get(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+<?php
+defined('ABSPATH') || exit;
+$json = wp_json_encode(sh_settings(true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
-
-<h2>Master JSON Editor</h2>
-
-<div class="notice notice-warning" style="margin-bottom:16px">
-    <p><strong>Warning:</strong> Editing this JSON overwrites all individual tab settings. Changes take effect after saving.</p>
-</div>
-
-<div class="sh-json-editor">
-    <textarea name="sh_json" id="sh-json-textarea"><?php echo esc_textarea($json); ?></textarea>
-</div>
-
-<p style="margin-top:12px">
-    <button type="button" class="button" id="sh-json-download">Download JSON</button>
-    <button type="button" class="button" id="sh-json-upload-btn">Upload JSON</button>
-    <input type="file" id="sh-json-upload" accept=".json" style="display:none">
+<h2><?php esc_html_e('Master JSON Editor', 'saadhashmani'); ?></h2>
+<div class="notice notice-warning inline"><p><?php esc_html_e('Saving this tab replaces every setting with the JSON below. Use Download first to keep a backup. Media fields hold attachment IDs from this site.', 'saadhashmani'); ?></p></div>
+<div class="sh-json-editor"><textarea name="sh_json" id="sh-json-textarea" spellcheck="false"><?php echo esc_textarea($json); ?></textarea></div>
+<p>
+    <button type="button" class="button" id="sh-json-download"><?php esc_html_e('Download JSON', 'saadhashmani'); ?></button>
+    <button type="button" class="button" id="sh-json-upload-btn"><?php esc_html_e('Load JSON file', 'saadhashmani'); ?></button>
+    <input type="file" id="sh-json-upload" accept=".json,application/json" hidden>
 </p>
