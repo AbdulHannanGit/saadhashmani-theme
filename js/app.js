@@ -1021,11 +1021,15 @@ class App {
 
   buildPlaybook() {
     const pbData = this.props.sections.playbook || {};
-    const principleTopics = (pbData.principles || []).map((p) => Object.assign({}, p));
-    const videoTopics = (pbData.reels || []).map((p) => Object.assign({ open: true }, p));
+    let principleTopics = (pbData.principles || []).map((p) => Object.assign({}, p));
+    let videoTopics = (pbData.reels || []).map((p) => Object.assign({ open: true }, p));
+    // Phones get a shorter wheel: only the topics ticked "Show on mobile" (all of them, no random pick)
+    const mobilePick = this.isMobile() && (videoTopics.some(p => p.m) || principleTopics.some(p => p.m));
+    const allReels = videoTopics;
+    if (mobilePick) { videoTopics = videoTopics.filter(p => p.m); principleTopics = principleTopics.filter(p => p.m); }
     for (let i = principleTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = principleTopics[i]; principleTopics[i] = principleTopics[j]; principleTopics[j] = t; }
-    const hiddenTopics = principleTopics.slice(0, pbData.locked_count == null ? 16 : pbData.locked_count);
-    hiddenTopics.forEach(p => { p.open = false; p.img = p.img || (videoTopics.length ? videoTopics[Math.floor(Math.random() * videoTopics.length)].img : ''); p.embed = null; });
+    const hiddenTopics = mobilePick ? principleTopics : principleTopics.slice(0, pbData.locked_count == null ? 16 : pbData.locked_count);
+    hiddenTopics.forEach(p => { p.open = false; p.img = p.img || (allReels.length ? allReels[Math.floor(Math.random() * allReels.length)].img : ''); p.embed = null; });
     this.pbTopics = videoTopics.concat(hiddenTopics);
     this.pbs = [];
     for (let i = this.pbTopics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = this.pbTopics[i]; this.pbTopics[i] = this.pbTopics[j]; this.pbTopics[j] = t; }
