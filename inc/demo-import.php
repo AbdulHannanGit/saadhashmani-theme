@@ -11,8 +11,9 @@ defined('ABSPATH') || exit;
 
 function sh_demo_find_existing($path, $sha1, $bytes = 0) {
     $q = ['post_type' => 'attachment', 'post_status' => 'inherit', 'posts_per_page' => 1, 'fields' => 'ids', 'no_found_rows' => true];
+    // Same source path counts only while the contents are unchanged (a re-encoded video keeps its name).
     $hit = get_posts($q + ['meta_key' => '_sh_demo_src', 'meta_value' => $path]);
-    if ($hit) return (int) $hit[0];
+    if ($hit && (!$sha1 || get_post_meta($hit[0], '_sh_demo_sha1', true) === $sha1)) return (int) $hit[0];
     if (!$sha1) return 0;
     $hit = get_posts($q + ['meta_key' => '_sh_demo_sha1', 'meta_value' => $sha1]);
     if ($hit) return (int) $hit[0];

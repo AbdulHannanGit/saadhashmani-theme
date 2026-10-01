@@ -16,7 +16,7 @@ function sh_defaults() {
             'gsap_desktop' => true,
             'gsap_mobile' => false,
             'preloader' => true,
-            'preloader_assets' => ['logo' => true, 'video' => true, 'poster' => true, 'gallery' => true],
+            'preloader_assets' => ['logo' => true, 'video' => true, 'poster' => true, 'gallery' => true, 'fonts' => true, 'next_section' => true, 'warmup' => true],
             'video_quality' => '720p',
             'mobile_video_quality' => '480p',
             'logo' => 0,

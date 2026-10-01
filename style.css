@@ -4,7 +4,7 @@ Theme URI: https://saadhashmani.com
 Author: Saad Hashmani
 Author URI: https://saadhashmani.com
 Description: Dark cinematic one-page portfolio: scroll-stepped sections over a single looping background video, ventures carousel, playbook wheel, podcast ring, testimonials and a chat-style contact form. Optional GSAP motion layer.
-Version: 3.0.0
+Version: 3.1.0
 Requires at least: 6.3
 Requires PHP: 7.4
 License: All Rights Reserved
@@ -23,7 +23,9 @@ Text Domain: saadhashmani
   --ink-900:#0b0b0c;
   --ease-brand:cubic-bezier(.22,.61,.36,1);
 }
-html,body{margin:0;background:var(--bg,#0b0b0c);overflow-x:clip}
+html,body{margin:0;background:var(--bg,#0b0b0c);overflow-x:clip;overscroll-behavior:none}
+/* The page moves only by section steps: no native panning on the stage (pinch-zoom stays available) */
+[data-stage-root],[data-gallery-lb]{touch-action:pinch-zoom}
 *{box-sizing:border-box}
 [data-bg]{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 42%;display:block}
 [data-sec6]::before,[data-sec7]::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(56% 34% at 50% 12%,rgba(11,11,12,.62),rgba(11,11,12,0) 72%)}
