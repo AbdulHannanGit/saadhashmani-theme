@@ -72,10 +72,17 @@ class App {
     this.bindKeys();
     this.bootContent();
 
-    this.onResize = () => { this.layout(); this.pbs && this.pbs.forEach(p => this.layoutPb(p)); this.handle(this.readY()); if (this.headEl) { this.headEl._hRect = this.headEl.getBoundingClientRect(); if (this.headEl._clone) this.headEl._clone.style.width = this.headEl._hRect.width + 'px'; } };
+    this._vw = window.innerWidth; this._vh = window.innerHeight;
+    this.onResize = () => {
+      const vw = window.innerWidth, vh = window.innerHeight;
+      if (vw === this._vw && Math.abs(vh - this._vh) < 160 && this.isMobile()) return;
+      this._vw = vw; this._vh = vh;
+      this.layout(); this.pbs && this.pbs.forEach(p => this.layoutPb(p));
+      if (!this._transPlaying && !this.autoReturn && !this.inLoop) this.landOn(this.currentSection);
+      this.handle(this.readY()); if (this.headEl) { this.headEl._hRect = this.headEl.getBoundingClientRect(); if (this.headEl._clone) this.headEl._clone.style.width = this.headEl._hRect.width + 'px'; } };
     window.addEventListener('resize', this.onResize, { passive: true });
 
-    const frame = (now) => { const dt = this._lastFrameT != null ? Math.min(0.05, (now - this._lastFrameT) / 1000) : 0; this._lastFrameT = now; this.raf = requestAnimationFrame(frame); try { this.tickBg(now); this.tickPlaybook(now); this.tickPods(); this.tickTestis(); this.tickArrowMagnet(); this.tickMenu(); if (this.motion) this.motion.tick(); if (this.cur) this.tickCursor(); } catch (e) { if (!this._tickErr) { this._tickErr = true; console.error(e); } } };    this.raf = requestAnimationFrame(frame);
+    const frame = (now) => { const dt = this._lastFrameT != null ? Math.min(0.05, (now - this._lastFrameT) / 1000) : 0; this._lastFrameT = now; this.raf = requestAnimationFrame(frame); try { this.tickBg(now); if (this.secOn(this.sec4)) this.tickPlaybook(now); if (this.secOn(this.sec5)) this.tickPods(); if (this.secOn(this.sec6)) this.tickTestis(); this.tickArrowMagnet(); this.tickMenu(); if (this.motion) this.motion.tick(); if (this.cur) this.tickCursor(); } catch (e) { if (!this._tickErr) { this._tickErr = true; console.error(e); } } };    this.raf = requestAnimationFrame(frame);
 
     this.handle(0);
     this.runPreloader();
@@ -98,6 +105,11 @@ class App {
   }
 
   isMobile() { return window.innerWidth <= 768; }
+
+  secOn(el) { return !!el && el.style.opacity !== '' && parseFloat(el.style.opacity) > 0.001; }
+
+  // Input (wheel/swipe/keys that change section) waits for the preloader and the hero intro to finish.
+  inputReady() { return this._preDone !== false && !this._introLock && performance.now() >= (this._inputAt || 0); }
 
   initCursor() {
     if (this._curOn) return;
@@ -491,6 +503,7 @@ class App {
     if (skip) {
       this.pre = this.root.querySelector('[data-preloader]');
       if (this.pre) { this.pre.style.display = 'none'; this.pre.style.opacity = '0'; }
+      setTimeout(() => this.warmUp(), 1500);
       return;
     }
     this.pre = this.root.querySelector('[data-preloader]');
@@ -517,19 +530,66 @@ class App {
   }
 
   preload() {
-    const imgTask = (src) => new Promise((res) => { const im = new Image(); im.onload = im.onerror = () => res(); im.decoding = 'async'; im.src = src; setTimeout(res, 7000); });
+    this._warm = this._warm || [];
+    const imgTask = (src) => new Promise((res) => {
+      const im = new Image(); im.decoding = 'async';
+      im.onload = () => { (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(res); };
+      im.onerror = () => res();
+      im.src = src; this._warm.push(im); setTimeout(res, 7000);
+    });
     const tasks = [];
     const pa = this.props.preloadAssets, p = this.props;
     if (pa.logo && p.logo) tasks.push(imgTask(p.logo));
     if (pa.video && this.bgReady) tasks.push(this.bgReady);
     if (pa.still && p.still) tasks.push(imgTask(p.still));
     if (pa.gallery) p.preloadGallery.forEach((u) => tasks.push(imgTask(u)));
+    if (pa.fonts && document.fonts && document.fonts.ready) tasks.push(Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 4000))]));
+    if (pa.next) (p.sections.timeline || []).forEach((m) => { if (m.img) tasks.push(imgTask(m.img)); });
     const total = tasks.length; let done = 0;
     this._preMinUntil = performance.now() + 5000;
     return new Promise((resolve) => {
       if (!total) { this._preTarget = 1; return resolve(); }
       tasks.forEach((t) => t.then(() => { done++; this._preTarget = done / total; if (done >= total) resolve(); }));
     });
+  }
+
+  // After the reveal: fetch and decode the remaining sections' images in visiting order, a few at a
+  // time and only while no section transition is playing, so the first visit to a section never
+  // stalls on image decoding.
+  warmUp() {
+    if (this._warmed || !this.props.preloadAssets.warmup) return;
+    this._warmed = true;
+    const c = navigator.connection;
+    if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ''))) return;
+    const S = this.props.sections, urls = [], seen = new Set();
+    (this._warm || []).forEach((im) => seen.add(im.src));   // already fetched and decoded by the preloader
+    const add = (u) => { if (!u) return; const abs = new URL(u, location.href).href; if (!seen.has(abs)) { seen.add(abs); urls.push(u); } };
+    // images already in the page are decoded in place; the rest are fetched
+    const dom = (el) => el && el.querySelectorAll('img').forEach((im) => { if (im.complete && im.naturalWidth) { seen.add(im.currentSrc || im.src); if (im.decode) urls.push(im); } else add(im.getAttribute('src')); });
+    (S.timeline || []).forEach((m) => add(m.img));
+    dom(this.sec3);
+    this.sec3 && this.sec3.querySelectorAll('[data-full]').forEach((im) => add(im.dataset.full));
+    ((S.playbook && S.playbook.reels) || []).forEach((r) => add(r.img));
+    dom(this.sec5);
+    dom(this.sec6);
+    (S.podcasts || []).forEach((e) => add(e.img));
+    this._warm = this._warm || [];
+    let i = 0, active = 0;
+    const limit = this.isMobile() ? 2 : 4;
+    const idle = window.requestIdleCallback ? (f) => window.requestIdleCallback(f, { timeout: 600 }) : (f) => setTimeout(f, 60);
+    const pump = () => {
+      if (this._transPlaying) { setTimeout(pump, 250); return; }
+      while (active < limit && i < urls.length) {
+        const item = urls[i++]; active++;
+        const done = () => { active--; idle(pump); };
+        if (typeof item !== 'string') { item.decode().catch(() => {}).then(done); continue; }
+        const im = new Image(); im.decoding = 'async';
+        im.onload = () => { (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(done); };
+        im.onerror = done;
+        im.src = item; this._warm.push(im);
+      }
+    };
+    idle(pump);
   }
 
   preScrambleRAF() {
@@ -565,6 +625,8 @@ class App {
       if (this.preWave) this.preWave.style.opacity = '0';
       if (this.preArrow) this.preArrow.style.opacity = '1';
       if (this.preRingText) this.preRingText.textContent = this.props.scrollText;
+      this._inputAt = performance.now() + (instant ? 0 : 560) + 350;
+      setTimeout(() => this.warmUp(), (instant ? 0 : 560) + 1800);
       setTimeout(() => {
         if (!this.pre) return;
         this.pre.style.opacity = '0';
@@ -1117,7 +1179,8 @@ class App {
     } else if (!inst.drag) {
       inst.rot += inst.vel; inst.vel *= 0.94; if (Math.abs(inst.vel) < 0.002) inst.vel = 0;
     }
-    inst.group.style.transform = 'translate(' + inst.cx + 'px,' + inst.cy + 'px) rotate(' + inst.rot + 'deg)';
+    const gtf = 'translate(' + inst.cx.toFixed(1) + 'px,' + inst.cy.toFixed(1) + 'px) rotate(' + inst.rot.toFixed(2) + 'deg)';
+    if (inst._gtf !== gtf) { inst._gtf = gtf; inst.group.style.transform = gtf; }
     for (let i = 0; i < inst.items.length; i++) {
       const it = inst.items[i];
       const abs = ((it.base + inst.rot) % 360 + 360) % 360;
@@ -1125,15 +1188,19 @@ class App {
       const breath = 8 + Math.sin(t * 0.9 + it.phase) * 4;
       const hov = inst.hover === i, sel = inst.selected === i;
       const sc = hov ? 1.28 : sel ? 1.18 : 1;
-      if (left) { it.span.style.transformOrigin = '50% 50%'; it.span.style.transform = 'translateX(' + breath + 'px) rotate(180deg) scale(' + sc + ')'; }
-      else { it.span.style.transformOrigin = '0 50%'; it.span.style.transform = 'translateX(' + breath + 'px) scale(' + sc + ')'; }
-      let col;
-      if (it.open) col = 'var(--glow,#f6f5f2)';
-      else col = hov ? 'var(--glow,#f6f5f2)' : 'rgba(244,244,245,.34)';
-      it.span.style.color = col;
-      it.span.style.opacity = (it.open || hov || sel) ? '1' : '0.85';
-      it.span.style.textShadow = (it.open && (hov || sel)) ? '0 0 18px rgba(255,255,255,.24)' : 'none';
-      it.lock.style.opacity = (!it.open && hov) ? '1' : '0';
+      const st = it.span.style, sv = it._sv || (it._sv = {});
+      const org = left ? '50% 50%' : '0 50%';
+      const tf = 'translateX(' + breath.toFixed(1) + 'px)' + (left ? ' rotate(180deg)' : '') + ' scale(' + sc + ')';
+      const col = it.open ? 'var(--glow,#f6f5f2)' : (hov ? 'var(--glow,#f6f5f2)' : 'rgba(244,244,245,.34)');
+      const op = (it.open || hov || sel) ? '1' : '0.85';
+      const sh = (it.open && (hov || sel)) ? '0 0 18px rgba(255,255,255,.24)' : 'none';
+      const lk = (!it.open && hov) ? '1' : '0';
+      if (sv.org !== org) { sv.org = org; st.transformOrigin = org; }
+      if (sv.tf !== tf) { sv.tf = tf; st.transform = tf; }
+      if (sv.col !== col) { sv.col = col; st.color = col; }
+      if (sv.op !== op) { sv.op = op; st.opacity = op; }
+      if (sv.sh !== sh) { sv.sh = sh; st.textShadow = sh; }
+      if (sv.lk !== lk) { sv.lk = lk; it.lock.style.opacity = lk; }
     }
     // In sticky (left) reading mode, the topic rotated to the center (pointing at the card)
     // auto-populates the right box, so rotating the wheel skims through playbook items.
@@ -1366,6 +1433,7 @@ class App {
     this.podUp = () => { if (!this.podDrag) return; this.podDrag = false; ring.style.cursor = 'grab'; const v = Math.max(-0.6, Math.min(0.6, this.podVel)); if (Math.abs(v) > 0.01) { this.podInertia = true; this.podInertiaV = v; } else { this.podTarget = Math.round(this.podP); } };
     window.addEventListener('pointermove', this.podMove, { passive: true });
     window.addEventListener('pointerup', this.podUp, { passive: true });
+    window.addEventListener('pointercancel', this.podUp, { passive: true });
     this.sec5.querySelector('[data-pod-prev]').addEventListener('click', () => { this.podInertia = false; this.podTarget = Math.round(this.podTarget) - 1; });
     this.sec5.querySelector('[data-pod-next]').addEventListener('click', () => { this.podInertia = false; this.podTarget = Math.round(this.podTarget) + 1; });
     this.sec5.querySelector('[data-pod-play]').addEventListener('click', () => this.openPod());
@@ -1493,7 +1561,9 @@ class App {
       c.el.addEventListener('mouseleave', () => c.hover = false);
       c.el.addEventListener('pointerdown', (e) => { c.drag = true; this.testiDrag = true; c.lastY = e.clientY; c.lastX = e.clientX; c.el.style.cursor = 'grabbing'; });
       window.addEventListener('pointermove', (e) => { if (!c.drag) return; const mob = this.isMobile(); const delta = mob ? (e.clientX - c.lastX) : (e.clientY - c.lastY); c.lastY = e.clientY; c.lastX = e.clientX; const dir = c.side === 'left' ? -1 : 1; const mult = mob ? 2.5 : 1; c.pos += dir * delta * mult; c.vel = dir * delta * mult; });
-      window.addEventListener('pointerup', () => { if (c.drag) { c.drag = false; this.testiDrag = false; c.el.style.cursor = 'grab'; } });
+      const end = () => { if (c.drag) { c.drag = false; this.testiDrag = false; c.el.style.cursor = 'grab'; } };
+      window.addEventListener('pointerup', end);
+      window.addEventListener('pointercancel', end);
     });
     // Mobile: merge both columns into one rightward marquee + prevent section-jump on horizontal swipe
     if (this.isMobile()) {
@@ -1955,7 +2025,7 @@ class App {
       }
     };
     if (this._blobCache[src]) { apply(this._blobCache[src]); return; }
-    fetch(src).then(r => r.blob()).then((blob) => {
+    fetch(src, { priority: 'high' }).then(r => r.blob()).then((blob) => {
       const blobUrl = URL.createObjectURL(blob);
       this._blobCache[src] = blobUrl;
       apply(blobUrl);
@@ -2014,29 +2084,56 @@ class App {
     // Programmatic scrollTo still moves the page (drives update* overlay fades).
     this._wheelHandler = (e) => {
       e.preventDefault();
-      if (this._transPlaying || this.autoReturn || this._homeGliding) return;
+      // A gesture starts after a pause, or with a clearly stronger push than the momentum tail.
+      const now = performance.now(), mag = Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : 1);
+      const gap = now - (this._wLast || 0);
+      const fresh = gap > 220 || (now - (this._wStepAt || 0) > 450 && mag > (this._wMag || 0) * 1.8 + 6);
+      this._wLast = now; this._wMag = mag;
+      if (fresh) this._wUsed = false;
+      if (!this.inputReady() || this._transPlaying || this.autoReturn || this._homeGliding) { this._wUsed = true; return; }
       if (this._homeScrollActive) {
         // At last section: accumulate scroll to drive arrow toward center
         if (e.deltaY > 0) { this._homeScrollAccum = Math.min(1, (this._homeScrollAccum || 0) + Math.abs(e.deltaY) / 600); this._updateHomeScroll(); }
         else if (e.deltaY < 0) { this._homeScrollAccum = Math.max(0, (this._homeScrollAccum || 0) - Math.abs(e.deltaY) / 600); this._updateHomeScroll(); if (this._homeScrollAccum <= 0) { this._glideHomeScrollBack(); } }
         return;
       }
-      if (this._wheelLock) return;
-      this._wheelLock = true;
-      setTimeout(() => { this._wheelLock = false; }, 600);
+      if (this._wUsed || mag < 4) return;
+      this._wUsed = true; this._wStepAt = now;
       if (e.deltaY > 0) this.next();
       else if (e.deltaY < 0) this.prev();
     };
     window.addEventListener('wheel', this._wheelHandler, { passive: false });
-    let touchY = null;
-    this._touchStart = (e) => { touchY = e.touches[0].clientY; };
+    let touchY = null, touchX = 0, zone = false;
+    // horizontal drag areas: timeline, podcast ring, testimonials (phones), gallery strip, partner logos, venture slides
+    const HZONES = '[data-tl-viewport],[data-pod-ring],[data-pod-track],[data-testi-col],[data-vg-viewport],[data-pmarquee],[data-vslide]';
+    // areas that scroll natively (chat history, long milestone text)
+    const SCROLLERS = '[data-chat-history],[data-tl-modal-card] div[style*="overflow: auto"]';
+    this._touchStart = (e) => {
+      const t = e.touches[0];
+      touchY = t.clientY; touchX = t.clientX; this._gesture = null;
+      zone = !!(e.target && e.target.closest && e.target.closest(HZONES));
+      // a touch that began during the preloader or hero intro, or a pinch, never changes section
+      if (!this.inputReady() || e.touches.length > 1) touchY = null;
+    };
+    this._touchEnd = () => { this._gesture = null; };
     this._touchMove = (e) => {
+      // the page itself never pans natively: no address-bar slide, no pull-to-refresh, no rubber band
+      if (e.touches.length === 1 && e.cancelable && !(e.target && e.target.closest && e.target.closest(SCROLLERS))) e.preventDefault();
       // a finger turning the playbook wheel never also changes section
-      if (this.activeInst && this.activeInst.drag) { e.preventDefault(); touchY = null; return; }
-      if (touchY === null || this._transPlaying || this.autoReturn || this._homeGliding) return;
-      const dy = touchY - e.changedTouches[0].clientY;
+      if (this.activeInst && this.activeInst.drag) { touchY = null; return; }
+      if (touchY === null) return;
+      const t = e.changedTouches[0], dx = t.clientX - touchX, dy0 = t.clientY - touchY;
+      if (!this._gesture) {
+        if (Math.abs(dx) < 10 && Math.abs(dy0) < 10) return;
+        this._gesture = Math.abs(dx) > Math.abs(dy0) * 1.15 ? (zone ? 'local' : 'none') : 'section';
+        // vertical intent wins: release any carousel/timeline drag that started with this touch
+        if (this._gesture === 'section' && zone) { try { window.dispatchEvent(new PointerEvent('pointercancel')); } catch (err) {} }
+      }
+      if (this._gesture !== 'section') { touchY = null; return; }
+      if (this._transPlaying || this.autoReturn || this._homeGliding) return;
+      const dy = touchY - t.clientY;
       if (Math.abs(dy) > 40) {
-        e.preventDefault(); touchY = null;
+        touchY = null;
         if (this._homeScrollActive) {
           if (dy > 0) { this._homeScrollAccum = Math.min(1, (this._homeScrollAccum || 0) + 0.25); this._updateHomeScroll(); }
           else { this._homeScrollAccum = Math.max(0, (this._homeScrollAccum || 0) - 0.25); this._updateHomeScroll(); if (this._homeScrollAccum <= 0) { this._glideHomeScrollBack(); } }
@@ -2047,6 +2144,8 @@ class App {
     };
     window.addEventListener('touchstart', this._touchStart, { passive: true });
     window.addEventListener('touchmove', this._touchMove, { passive: false });
+    window.addEventListener('touchend', this._touchEnd, { passive: true });
+    window.addEventListener('touchcancel', this._touchEnd, { passive: true });
     this.onScrollNative = () => this.handle(this.readY());
     window.addEventListener('scroll', this.onScrollNative, { passive: true });
   }
@@ -2405,6 +2504,7 @@ class App {
     this.onKey = (e) => {
       const t = e.target;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (!this.inputReady()) return;
       const k = e.key;
       if (k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Spacebar') { e.preventDefault(); this.next(); }
       else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); this.prev(); }
@@ -2552,6 +2652,9 @@ class App {
 }
 
 function boot() {
+  // Reloads must start at the hero: the browser's own scroll restoration would land mid-page.
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+  if (window.scrollY) window.scrollTo(0, 0);
   var o = SH.options || {}, h = SH.hero || {};
   var pa = o.preloader_assets || {};
   var on = function (v) { return v !== false && v !== 0 && v !== '0' && v !== ''; };
@@ -2559,7 +2662,7 @@ function boot() {
     customCursor: on(o.custom_cursor),
     animations: on(o.animations),
     preloader: on(o.preloader),
-    preloadAssets: { logo: on(pa.logo), video: on(pa.video), still: on(pa.poster), gallery: on(pa.gallery) },
+    preloadAssets: { logo: on(pa.logo), video: on(pa.video), still: on(pa.poster), gallery: on(pa.gallery), fonts: on(pa.fonts), next: on(pa.next_section), warmup: on(pa.warmup) },
     qualityDesktop: o.video_quality || '720p',
     qualityMobile: o.mobile_video_quality || '480p',
     gsapDesktop: on(o.gsap_desktop),

@@ -2,7 +2,7 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.0.0** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.1.0** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ All settings live in the `sh_settings` option. Defaults are in `inc/defaults.php
 | **GSAP motion on mobile** | Off | The same on screens 768px and narrower |
 | Animations | On | Master switch. Off behaves like a visitor who asked for reduced motion: no video transitions, no cursor, plain fades |
 | Custom cursor | On | Lens cursor on mouse devices wider than 768px |
-| Preloader | On | Intro with the name scramble. Choose what it waits for: logo, hero still, background video, first gallery thumbnails |
+| Preloader | On | Intro with the name scramble. Choose what it waits for: logo, hero still, background video, first gallery thumbnails, fonts (no text reflow when the hero appears), The Record photos (the first section after the hero). **Warm-up** (on): after the reveal, the remaining sections' images are fetched and decoded in visiting order, a few at a time and never during a section transition (skipped on Data Saver / 2G) |
 | Video quality (desktop / mobile) | 720p / 480p | Which background video file is loaded |
 | Menu labels | Home … Contact | The seven menu entries |
 | Colours (9) | warm dark palette | `bg`, `bg_raised`, `bg_inset`, `tx`, `tx_muted`, `tx_faint`, `glow`, `line`, `line_strong`; output as CSS variables |
@@ -68,7 +68,7 @@ GSAP is never enqueued by PHP: `app.js` downloads it only when it is switched on
 
 #### Background video and clip lengths
 
-One MP4 holds every clip in order: `s0 t0 s1 t1 … s6 t6` (`s` = a section's loop, `t` = the transition to the next section, `t6` = Contact back to the hero). At rest a section's loop plays and restarts; stepping down plays the transition forward; stepping up cuts straight to the previous loop. The **Clip lengths** field lists the 14 durations in seconds. Change it only when the video is re-exported with different timings. Re-encoding with a short keyframe interval (e.g. `ffmpeg -g 15`) makes loop restarts instant.
+One MP4 holds every clip in order: `s0 t0 s1 t1 … s6 t6` (`s` = a section's loop, `t` = the transition to the next section, `t6` = Contact back to the hero). At rest a section's loop plays and restarts; stepping down plays the transition forward; stepping up cuts straight to the previous loop. The **Clip lengths** field lists the 14 durations in seconds. Change it only when the video is re-exported with different timings. **Keyframes matter**: the player seeks to the start of a clip at every loop restart and section change. Encode with a keyframe forced on every clip boundary (the demo videos do; recipe in the [demo media README](https://github.com/AbdulHannanGit/saadhashmani-demo-media#encoding-the-background-video)). With the original export (a keyframe every ~8 s) each seek decoded up to 8 s of video first and visibly stalled, worst on phones.
 
 ### Contact Details
 
@@ -81,6 +81,8 @@ View, download, load or paste the whole settings object. Saving replaces everyth
 ## How the site works
 
 - **Navigation**: wheel/trackpad, swipe, `↓ PageDown Space` / `↑ PageUp`, `Home` / `End`, the menu, or the scroll button. Past Contact, the button spins and returns to the hero. `Esc` closes the menu and lightboxes.
+- **One gesture, one owner**: the direction of the first ~10px of a touch decides what it does. Horizontal drags move the timeline, podcast ring, testimonials, gallery or venture slides and never change section; a vertical swipe changes section and releases any carousel it started on. A drag on the Playbook wheel only turns the wheel. One trackpad flick moves exactly one section (momentum is ignored).
+- **Reloads start at the hero**: browser scroll restoration is off, the page never pans natively (no address-bar slide, pull-to-refresh or rubber band), and input is ignored until the preloader and hero intro have finished.
 - **Hero**: name, eyebrow and scroll ring over the video.
 - **The Record**: stats and a draggable timeline; a milestone opens a popup with photo and story.
 - **Ventures**: four slides with prev/next and numbered dots (swipe on phones), gallery strip with a lightbox, partner marquee.
@@ -118,6 +120,9 @@ Attachments (images, PDF, Office documents, text; max 10 MB) go through WordPres
 - Cropped image sizes: `sh-card` 400×400, `sh-timeline` 512×640, `sh-podcast` 544×700, `sh-reel` 360×640. Run "Regenerate Thumbnails" for media uploaded before activating the theme.
 - Phone-specific CSS (`css/mobile.css`) is only applied at ≤768px; 480p video on phones by default.
 - No server-side device detection, so full-page caching is safe.
+- Per-frame work only for the section on screen: the Playbook wheel, podcast ring and testimonials stop animating while hidden, and style properties are written only when their value changes.
+- Phone address-bar resizes are ignored (the stage is fixed), so they never re-lay out the page mid-transition.
+- The background video downloads with high priority; every other image is `fetchpriority="low"` so it never competes with the video, the hero still or the fonts.
 
 ## File structure
 

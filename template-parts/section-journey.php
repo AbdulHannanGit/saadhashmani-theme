@@ -33,7 +33,7 @@ $v = $args;
 <div data-tl-modal-scrim="true" style="position: absolute; inset: 0; background: rgba(6,6,8,.58); -webkit-backdrop-filter: blur(16px) saturate(1.05); backdrop-filter: blur(16px) saturate(1.05);"></div>
 <div data-tl-modal-card="true" style="position: relative; display: grid; grid-template-columns: 1.02fr 1fr; width: min(940px,100%); height: min(520px,82vh); border: 1px solid var(--line-strong,rgba(255,255,255,.14)); border-radius: 16px; overflow: hidden; background: rgba(16,16,19,.5); -webkit-backdrop-filter: blur(22px) saturate(1.1); backdrop-filter: blur(22px) saturate(1.1); box-shadow: 0 50px 130px rgba(0,0,0,.62); transform: scale(.985); transition: transform .32s cubic-bezier(.16,1,.3,1);">
 <div style="position: relative; overflow: hidden; background: var(--bg-inset,#08080a);">
-<img data-tl-modal-img="true" alt="" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+<img data-tl-modal-img="true" alt="" loading="lazy" decoding="async" fetchpriority="low" style="width: 100%; height: 100%; object-fit: cover; display: block;">
 <div style="position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg,transparent 58%,rgba(16,16,19,.55));"></div>
 </div>
 <div style="position: relative; display: flex; flex-direction: column; gap: clamp(12px,1.8vh,20px); padding: clamp(26px,3.2vw,46px); overflow: auto;">

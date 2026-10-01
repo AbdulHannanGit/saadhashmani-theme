@@ -34,6 +34,9 @@ sh_field_check('options.preloader', __('Preloader', 'saadhashmani'), $o['preload
     sh_field_check('options.preloader_assets.poster', __('Hero still', 'saadhashmani'), $o['preloader_assets']['poster']);
     sh_field_check('options.preloader_assets.video', __('Background video (heaviest; makes the first scroll seamless)', 'saadhashmani'), $o['preloader_assets']['video']);
     sh_field_check('options.preloader_assets.gallery', __('First venture gallery thumbnails', 'saadhashmani'), $o['preloader_assets']['gallery']);
+    sh_field_check('options.preloader_assets.fonts', __('Fonts (no text reflow when the hero appears)', 'saadhashmani'), $o['preloader_assets']['fonts']);
+    sh_field_check('options.preloader_assets.next_section', __('The Record timeline photos (the first section after the hero)', 'saadhashmani'), $o['preloader_assets']['next_section']);
+    sh_field_check('options.preloader_assets.warmup', __('After the reveal, load and decode the remaining sections in the background (skipped on Data Saver / 2G)', 'saadhashmani'), $o['preloader_assets']['warmup']);
     ?>
 </div>
 
