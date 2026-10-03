@@ -25,7 +25,7 @@ $v = $args;
 <button data-pb-media-play="true" type="button" aria-label="<?php echo esc_attr(__('Play', 'saadhashmani')); ?>" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 62px; height: 62px; border-radius: 999px; border: 1px solid var(--glow,#f6f5f2); background: rgba(3,4,5,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;">
 <svg data-pb-media-icon="true" width="22" height="22" viewBox="0 0 24 24" fill="var(--glow,#f6f5f2)" stroke="none"><path d="M8 5v14l11-7z"></path></svg>
 </button>
-<iframe data-pb-media-frame="true" title="Playbook video" allow="autoplay; encrypted-media; picture-in-picture" style="position: absolute; top: 0; left: 0; width: calc(100% + 20px); height: 100%; border: 0; display: none;"></iframe>
+<iframe data-pb-media-frame="true" referrerpolicy="strict-origin-when-cross-origin" title="Playbook video" allow="autoplay; encrypted-media; picture-in-picture" style="position: absolute; top: 0; left: 0; width: calc(100% + 20px); height: 100%; border: 0; display: none;"></iframe>
 </div>
 <a data-pb-cta="true" href="#" style="display: none; align-items: center; gap: 8px; font-family: var(--font-mono,monospace); font-weight: 500; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; color: var(--glow,#f6f5f2); text-decoration: none; padding: 11px 20px; border: 1px solid var(--line-strong,rgba(255,255,255,.14)); border-radius: 999px; width: max-content; pointer-events: auto;"><?php echo esc_html($v['cta']); ?></a>
 </div>

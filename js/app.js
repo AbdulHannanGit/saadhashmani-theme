@@ -12,6 +12,11 @@ function urlFlag(name) {
   try { var v = new URLSearchParams(window.location.search).get(name); return v === null ? null : v; } catch (e) { return null; }
 }
 
+// YouTube needs the page origin (Referer) or the player shows error 153, so pass it explicitly.
+function ytEmbed(id) {
+  return 'https://www.youtube.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0&playsinline=1&origin=' + encodeURIComponent(window.location.origin);
+}
+
 // GSAP is only downloaded when it is switched on for this device type (or forced with ?gsap=1).
 function loadGsap(props, mobile) {
   var flag = urlFlag('gsap');
@@ -1313,6 +1318,7 @@ class App {
       const frame = document.createElement('iframe');
       frame.style.cssText = 'width:calc(100% + 20px);height:100%;border:0;display:block';
       frame.allow = 'autoplay; encrypted-media; picture-in-picture';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
       wrap.appendChild(frame);
       lb.appendChild(close);
       lb.appendChild(wrap);
@@ -1578,7 +1584,8 @@ class App {
   }
   playPod() {
     const d = this.podData[this.podCenter]; if (!d || !this.podFrame) return;
-    this.podFrame.src = 'https://www.youtube.com/embed/' + d.yt + '?autoplay=1&rel=0';
+    this.podFrame.referrerPolicy = 'strict-origin-when-cross-origin';
+    this.podFrame.src = ytEmbed(d.yt);
     this.podFrame.style.display = 'block';
     if (this.podPoster) this.podPoster.style.display = 'none';
     const playBtn = this.sec5.querySelector('[data-pod-lightbox-play]');
@@ -1742,7 +1749,8 @@ class App {
 
   openTesti(yt) {
     if (!this.testiFrame) return;
-    this.testiFrame.src = 'https://www.youtube.com/embed/' + yt + '?autoplay=1&rel=0';
+    this.testiFrame.referrerPolicy = 'strict-origin-when-cross-origin';
+    this.testiFrame.src = ytEmbed(yt);
     this.testiLb.style.display = 'flex';
   }
   closeTesti() { if (this.testiFrame) this.testiFrame.src = ''; if (this.testiLb) this.testiLb.style.display = 'none'; }
