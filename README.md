@@ -2,14 +2,14 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.1.4** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.1.5** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 
 - WordPress 6.3+ (deferred script loading), PHP 7.4+
 - Optional: [LiteSpeed Cache](https://wordpress.org/plugins/litespeed-cache/) or any full-page cache (the theme is cache-safe, see [Performance](#performance))
-- Optional: [Fluent Forms](https://wordpress.org/plugins/fluentform/) to receive contact submissions as entries
-- Optional: a Google reCAPTCHA v3 key pair
+- Optional: [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) or [Fluent Forms](https://wordpress.org/plugins/fluentform/) to process contact submissions (their emails, entries, spam checks and integrations)
+- Optional: a Google reCAPTCHA v3 key pair (or the one already set in your form plugin)
 
 ## Installation
 
@@ -65,6 +65,7 @@ GSAP is never enqueued by PHP: `app.js` downloads it only when it is switched on
 | **The Podcast** | Eyebrow, episodes (title, show, one-line description, YouTube ID, 3:4 card, 16:9 player poster) |
 | **The Receipts** | Eyebrow, heading, three stats per filter (All, Google, Instagram, Facebook, TikTok, X), filter button labels, left and right testimonial columns (platform, stars, quote, name, role, avatar, optional 16:9 photo, optional YouTube ID for a video review) |
 | **Contact** | Eyebrow, heading + faint accent, description, enquiry types, default type |
+| **Receipts** | **Show testimonial cards** (untick to hide the card strip; heading, platform buttons and stats stay), eyebrow, heading, stats per platform, cards |
 
 #### Background video and clip lengths
 
@@ -72,7 +73,7 @@ One MP4 holds every clip in order: `s0 t0 s1 t1 … s6 t6` (`s` = a section's lo
 
 ### Contact Details
 
-Email, location, social links (X, Facebook, Instagram, TikTok, LinkedIn; empty ones are hidden), where submissions go (email to the site admin, or Fluent Forms entries), reCAPTCHA v3 keys.
+Email, location, social links (X, Facebook, Instagram, TikTok, LinkedIn; empty ones are hidden), where submissions go (theme only, Contact Form 7 or Fluent Forms, plus the form and its field names), reCAPTCHA v3 keys and minimum score.
 
 ### Master JSON
 
@@ -94,13 +95,19 @@ View, download, load or paste the whole settings object. Saving replaces everyth
 
 ## Contact form
 
-Submissions post to `admin-ajax.php` (`action=sh_contact`) and are:
+The chat form keeps the theme's look; the form plugin does the processing. On send, the browser posts to `admin-ajax.php` (`action=sh_contact`) and the theme:
 
-1. validated (name, valid email, message) and, if keys are set, checked with reCAPTCHA v3 (score ≥ 0.5);
-2. stored in `{prefix}sh_submissions` (date, time, type, name, email, message, attachment URL);
-3. emailed to the site admin (Reply-To set to the sender) or added to the chosen Fluent Forms form.
+1. drops bots that fill the hidden honeypot field, validates name / email / message (length-capped) and the enquiry type, and rate-limits each IP to 5 messages per 10 minutes (`sh_contact_rate_limit` filter);
+2. verifies reCAPTCHA v3, once, with the theme's keys or, if those are empty, the selected plugin's own v3 keys (Contact Form 7 → Integration, Fluent Forms → Global Settings → reCAPTCHA). It checks success, score (Minimum score, default 0.5), the `contact` action and the site's hostname, and refuses if Google can't be reached (`sh_recaptcha_fail_open` filter to allow). The plugin's own reCAPTCHA step is then skipped for that message (tokens are single-use); its other spam checks still run;
+3. hands the message to the selected plugin:
+   - **Contact Form 7**: runs the form's own `submit()`, the same path as its REST endpoint, so its validation, mail (with a `[file]` field the upload is attached), Flamingo storage and spam checks apply;
+   - **Fluent Forms**: calls its submission service (`SubmissionHandlerService::handleSubmission`, 5.x+), or its public AJAX handler in-process on older versions, so entries, notifications and integrations apply;
+   - **Theme only**, or if the plugin is inactive or the form is missing: stores it in `{prefix}sh_submissions` and emails the site admin (Reply-To set to the sender).
+4. returns the plugin's message. A rejection (validation, spam, mail failure) is shown in the chat with a **Try again** button.
 
-Attachments (images, PDF, Office documents, text; max 10 MB) go through WordPress's upload checks into `uploads/sh-submissions/` with randomised names, an `index.php` and an `.htaccess` that blocks script execution. The nonce is checked for logged-in users only: logged-out nonces are shared by every visitor and expire inside cached pages, which would silently drop messages.
+**Field names** (Contact Details → Form field names): the plugin form fields that receive each answer. Defaults: CF7 `your-name`, `your-email`, `your-message`, `your-subject`; Fluent Forms `names[first_name]`, `email`, `message`, `subject`. `-` skips an answer. Attachment: a CF7 `[file]` field receives the file; any other field gets a link; empty adds the link to the message. Keep other required fields out of the form.
+
+The reCAPTCHA script loads only when the visitor starts the form (not on page load). Its floating badge is hidden and the required "Protected by reCAPTCHA…" notice is shown under the form. Chat text is HTML-escaped. Attachments (images, PDF, Office documents, text; max 10 MB) go through WordPress's upload checks into `uploads/sh-submissions/` with randomised names, an `index.php` and an `.htaccess` that blocks script execution. The nonce is checked for logged-in users only: logged-out nonces are shared by every visitor and expire inside cached pages, which would silently drop messages.
 
 ## SEO
 

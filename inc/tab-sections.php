@@ -142,6 +142,7 @@ case 'podcast':
 case 'receipts':
     $rc = $s['receipts'];
     echo '<h3>' . esc_html__('The Receipts', 'saadhashmani') . '</h3>';
+    sh_field_check('receipts.show_cards', __('Show testimonial cards', 'saadhashmani'), !empty($rc['show_cards']), __('Untick to hide the moving card strip; the heading, platform buttons and stats stay. Your cards are kept.', 'saadhashmani'));
     sh_field_text('receipts.eyebrow', __('Eyebrow', 'saadhashmani'), $rc['eyebrow']);
     sh_field_text('receipts.heading', __('Heading', 'saadhashmani'), $rc['heading']);
     echo '<h4>' . esc_html__('Stats per filter', 'saadhashmani') . '</h4>';
