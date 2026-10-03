@@ -89,9 +89,10 @@
         tl.set(el, { autoAlpha: 1, textContent: '' }, 0)
           .to(el, { duration: 1, ease: 'none', scrambleText: { text, chars: DIAL, speed: 0.5, revealDelay: 0.25 } }, 0);
       });
-      // hero: the name rises letter by letter out of the preloader handoff
+      // hero: the name rises letter by letter out of the preloader handoff (the h1 carries the
+      // accessible name, so the split letters stay hidden: aria-label is not allowed on the spans)
       if (p.chars && p.chars.length) {
-        const sp = p.chars.map((el) => SplitText.create(el, { type: 'chars', mask: 'chars', tag: 'span', charsClass: 'gm-char' }));
+        const sp = p.chars.map((el) => SplitText.create(el, { type: 'chars', mask: 'chars', tag: 'span', charsClass: 'gm-char', aria: 'hidden' }));
         splits.push(...sp);
         tl.set(p.chars, { autoAlpha: 1 }, 0)
           .from(sp.flatMap((s) => s.chars), { yPercent: 110, duration: 1.1, stagger: 0.045, ease: 'expo.out' }, 0.05);

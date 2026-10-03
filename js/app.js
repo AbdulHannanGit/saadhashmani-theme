@@ -525,6 +525,7 @@ class App {
     window.addEventListener('touchmove', this._preBlock, { passive: false });
     this._preProg = 0; this._preTarget = 0; this._preDone = false;
     this._preStart = performance.now();
+    this.revealPreName();
     this.preScrambleRAF();
     this.preload().then(() => this.finishPreloader(false));
   }
@@ -543,8 +544,8 @@ class App {
     if (pa.video && this.bgReady) tasks.push(this.bgReady);
     if (pa.still && p.still) tasks.push(imgTask(p.still));
     if (pa.gallery) p.preloadGallery.forEach((u) => tasks.push(imgTask(u)));
-    if (pa.fonts && document.fonts && document.fonts.ready) tasks.push(Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 4000))]));
-    if (pa.next) (p.sections.timeline || []).forEach((m) => { if (m.img) tasks.push(imgTask(m.img)); });
+    if (pa.fonts) tasks.push(this.fontsReady(4000));
+    if (pa.next) (p.sections.timeline || []).forEach((m) => { if (m.thumb || m.img) tasks.push(imgTask(m.thumb || m.img)); });
     const total = tasks.length; let done = 0;
     this._preMinUntil = performance.now() + 5000;
     return new Promise((resolve) => {
@@ -592,6 +593,62 @@ class App {
     idle(pump);
   }
 
+  // Web fonts (Zodiak / General Sans) once their async stylesheet and files are in, capped so a slow
+  // font host never holds the page.
+  fontsReady(cap) {
+    if (!this._fontsP) {
+      const link = document.getElementById('sh-fonts-css') || document.getElementById('sh-google-fonts-css');
+      const sheet = new Promise((r) => {
+        if (!link || link.sheet) return r();
+        link.addEventListener('load', () => r(), { once: true });
+        link.addEventListener('error', () => r(), { once: true });
+      });
+      this._fontsP = sheet.then(() => {
+        if (!document.fonts || !document.fonts.load) return;
+        const fam = (el) => getComputedStyle(el).fontFamily;
+        return Promise.all([
+          document.fonts.load('500 64px ' + fam(this.preS1 || document.body), 'SAADHM'),
+          document.fonts.load('400 16px ' + fam(document.body), 'a'),
+        ]).then(() => document.fonts.ready);
+      }).catch(() => {});
+    }
+    return Promise.race([this._fontsP, new Promise((r) => setTimeout(r, cap))]);
+  }
+
+  // The preloader name stays invisible until the web font is in, then each letter gets a fixed-width
+  // cell: the scramble swaps glyphs inside the cells, so the line never re-flows (no layout shift),
+  // and the font swap happens before anything is visible.
+  revealPreName() {
+    const name = this.preS1 && this.preS1.parentElement;
+    if (!name) return;
+    this.fontsReady(1500).then(() => {
+      if (this._preCells) return;
+      const spans = [[this.preS1, this.props.firstName], [this.preS2, this.props.lastName]];
+      const cells = spans.map(([el, txt]) => {
+        if (!el) return [];
+        el.textContent = '';
+        return txt.toUpperCase().split('').map((ch) => {
+          const c = document.createElement('span');
+          c.textContent = ch;
+          c.style.display = 'inline-block';
+          el.appendChild(c);
+          return c;
+        });
+      });
+      const widths = cells.map((row) => row.map((c) => c.getBoundingClientRect().width));
+      cells.forEach((row, r) => row.forEach((c, i) => { c.style.width = widths[r][i] + 'px'; c.style.textAlign = 'center'; c.style.whiteSpace = 'pre'; }));
+      this._preCells = cells;
+      name.style.opacity = '1';
+    });
+  }
+
+  setPreText(first, last) {
+    if (!this._preCells) return;
+    const [a, b] = this._preCells;
+    for (let i = 0; i < a.length; i++) if (a[i].textContent !== first[i]) a[i].textContent = first[i] || '';
+    for (let i = 0; i < b.length; i++) if (b[i].textContent !== last[i]) b[i].textContent = last[i] || '';
+  }
+
   preScrambleRAF() {
     const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&$@01/';
     const first = this.props.firstName.toUpperCase(), last = this.props.lastName.toUpperCase();
@@ -606,8 +663,7 @@ class App {
         if (c === ' ') return ' ';
         return (i < lockR) ? c : CH[(Math.random() * CH.length) | 0];
       });
-      if (this.preS1) this.preS1.textContent = out.slice(0, first.length).join('');
-      if (this.preS2) this.preS2.textContent = out.slice(first.length + 1).join('');
+      this.setPreText(out.slice(0, first.length), out.slice(first.length + 1));
       // background image reveals (opacity rises) as loading progresses
       if (this.preVeil) this.preVeil.style.opacity = (0.9 - p * 0.9).toFixed(3);
       if (!this._preDone) this._preRAF = requestAnimationFrame(step);
@@ -619,8 +675,9 @@ class App {
     const go = () => {
       this._preDone = true; this._preTarget = 1; this._preProg = 1;
       if (this._preRAF) cancelAnimationFrame(this._preRAF);
-      if (this.preS1) this.preS1.textContent = this.props.firstName.toUpperCase();
-      if (this.preS2) this.preS2.textContent = this.props.lastName.toUpperCase();
+      this.setPreText(this.props.firstName.toUpperCase().split(''), this.props.lastName.toUpperCase().split(''));
+      const name = this.preS1 && this.preS1.parentElement;
+      if (name) name.style.opacity = '1';
       // waveform morphs into the scroll arrow, ring text becomes the hero label
       if (this.preWave) this.preWave.style.opacity = '0';
       if (this.preArrow) this.preArrow.style.opacity = '1';
@@ -800,7 +857,7 @@ class App {
       thumb.innerHTML =
         '<div style="position:relative">' +
           '<div style="position:relative;margin-bottom:10px;border-radius:10px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 20px 46px rgba(6,6,8,.5)">' +
-            '<img src="' + m.img + '" alt="" draggable="false" style="position:relative;top:-6px;width:100%;height:calc(100% + 6px);object-fit:cover;display:block;filter:grayscale(.45) contrast(1.04) brightness(.94);transition:filter .42s cubic-bezier(.16,1,.3,1)">' +
+            '<img src="' + (m.thumb || m.img) + '" alt="" draggable="false" style="position:relative;top:-6px;width:100%;height:calc(100% + 6px);object-fit:cover;display:block;filter:grayscale(.45) contrast(1.04) brightness(.94);transition:filter .42s cubic-bezier(.16,1,.3,1)">' +
           '</div>' +
           '<button data-tl-plus aria-label="View detail" style="position:absolute;top:9px;right:9px;width:27px;height:27px;border-radius:999px;border:1px solid var(--line-strong,rgba(255,255,255,.14));background:rgba(11,11,12,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:var(--tx,#f4f4f5);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .3s,transform .3s,border-color .3s">+</button>' +
         '</div>';
@@ -2071,7 +2128,11 @@ class App {
       let backP = 0;
       const last = this.segs.find(s => s.type === 'rest' && s.i === this.N - 1);
       if (last) { const cp = Math.max(0, Math.min(1, (y - (last.start - last.h)) / last.h)); left = left + (startLeft - left) * cp; backP = cp; }
-      this.arrow.style.left = left + 'px';
+      // left stays at the hero position; the glide is a transform (applied in tickArrowMagnet)
+      const base = startLeft + 'px';   // same as the markup's calc(50% - 60px)
+      if (this.arrow.style.left !== base) this.arrow.style.left = base;
+      this._arrowGlide = left - startLeft;
+      if (this.reduced) this.arrow.style.transform = 'translateX(' + this._arrowGlide.toFixed(1) + 'px)';
       this.arrowStuck = moveP > 0.9 && backP < 0.05;
     }
   }
@@ -2312,7 +2373,7 @@ class App {
     this._am.x += (tx - this._am.x) * 0.17;
     this._am.y += (ty - this._am.y) * 0.17;
     if (this.ringWrap) this.ringWrap.style.opacity = this._am.t.toFixed(3);
-    this.arrow.style.transform = 'translate(' + this._am.x.toFixed(1) + 'px,' + this._am.y.toFixed(1) + 'px)';
+    this.arrow.style.transform = 'translate(' + ((this._arrowGlide || 0) + this._am.x).toFixed(1) + 'px,' + this._am.y.toFixed(1) + 'px)';
   }
 
   bindMenu() {

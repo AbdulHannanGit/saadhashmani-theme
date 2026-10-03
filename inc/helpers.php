@@ -57,6 +57,20 @@ function sh_img($id, $size = 'full') {
     return wp_get_attachment_image_url((int) $id, $size) ?: '';
 }
 
+/** ' srcset=".." sizes=".."' for an attachment (same-ratio sizes only), so phones and small slots get small files. */
+function sh_srcset($id, $size, $sizes) {
+    if (!$id || !is_numeric($id)) return '';
+    $set = wp_get_attachment_image_srcset((int) $id, $size);
+    return $set ? ' srcset="' . esc_attr($set) . '" sizes="' . esc_attr($sizes) . '"' : '';
+}
+
+/** Display width (px) of an image shown at a fixed CSS height, for the sizes hint. */
+function sh_width_at($id, $height, $max = 0) {
+    $src = is_numeric($id) && $id ? wp_get_attachment_image_src((int) $id, 'medium') : false;
+    $w = ($src && $src[2]) ? (int) ceil($height * $src[1] / $src[2]) : $height * 3;
+    return $max ? min($max, $w) : $w;
+}
+
 /** Video fields accept an attachment ID or an external URL. */
 function sh_vid($id_or_url) {
     if (!$id_or_url) return '';
@@ -130,10 +144,10 @@ function sh_view_data() {
         $gallery = [];
         foreach ((array) $ven['gallery'] as $gid) {
             $thumb = sh_img($gid, 'sh-card');
-            if ($thumb) $gallery[] = ['thumb' => $thumb, 'full' => sh_img($gid, 'large')];
+            if ($thumb) $gallery[] = ['thumb' => $thumb, 'srcset' => sh_srcset($gid, 'sh-card', '(max-width:768px) 96px, 112px'), 'full' => sh_img($gid, 'large')];
         }
         $ventures[] = [
-            'logo' => sh_img($ven['logo'], 'medium'), 'eyebrow' => $ven['eyebrow'], 'title' => $ven['title'],
+            'logo' => sh_img($ven['logo'], 'medium'), 'logo_srcset' => sh_srcset($ven['logo'], 'medium', sh_width_at($ven['logo'], 44, 190) . 'px'), 'eyebrow' => $ven['eyebrow'], 'title' => $ven['title'],
             'description' => $ven['description'], 'cta_label' => $ven['cta_label'], 'cta_url' => $ven['cta_url'] ?: '#',
             'stats' => array_values((array) $ven['stats']), 'gallery' => $gallery,
         ];
@@ -142,13 +156,15 @@ function sh_view_data() {
     $partners = [];
     foreach ((array) $s['partners'] as $p) {
         $url = sh_img($p['img'] ?? 0, 'medium');
-        if ($url) $partners[] = ['url' => $url, 'h' => max(12, (int) ($p['h'] ?? 24)), 'alt' => sh_alt($p['img'], $p['name'] ?? '')];
+        if ($url) $partners[] = ['url' => $url, 'srcset' => sh_srcset($p['img'] ?? 0, 'medium', sh_width_at($p['img'] ?? 0, max(12, (int) ($p['h'] ?? 24))) . 'px'), 'h' => max(12, (int) ($p['h'] ?? 24)), 'alt' => sh_alt($p['img'], $p['name'] ?? '')];
     }
 
     $episodes = [];
     foreach ((array) $s['podcast']['episodes'] as $e) {
         $e = wp_parse_args((array) $e, ['t' => '', 'src' => '', 'd' => '', 'yt' => '', 'img' => 0, 'thumb' => 0]);
-        $episodes[] = ['t' => $e['t'], 'd' => $e['d'], 'thumb' => sh_img($e['thumb'] ?: $e['img'], 'sh-podcast')];
+        $pid = $e['thumb'] ?: $e['img'];
+        // ring cards show at ~110-150px wide: let the browser pick the medium size instead of the original
+        $episodes[] = ['t' => $e['t'], 'd' => $e['d'], 'thumb' => sh_img($pid, 'sh-podcast'), 'srcset' => sh_srcset($pid, 'medium', '(max-width:768px) 110px, 150px')];
     }
 
     $topics = array_merge(wp_list_pluck((array) $s['playbook']['reels'], 't'), wp_list_pluck((array) $s['playbook']['principles'], 't'));
@@ -158,6 +174,7 @@ function sh_view_data() {
     $v = [
         'first' => $first, 'last' => $last, 'name' => trim($first . ' ' . $last),
         'logo' => sh_img($s['options']['logo']),
+        'logo_srcset' => sh_srcset($s['options']['logo'], 'full', '260px'),
         'still' => sh_img($h['poster']),
         'eyebrow' => $h['eyebrow'], 'scroll_text' => $h['scroll_text'], 'preloader_text' => $h['preloader_text'],
         'preloader' => !empty($s['options']['preloader']),
@@ -210,7 +227,7 @@ function sh_js_data() {
     $timeline = [];
     foreach ((array) $s['record']['timeline'] as $m) {
         $m = wp_parse_args((array) $m, ['y' => '', 't' => '', 'tag' => '', 'img' => 0, 'd' => '']);
-        $timeline[] = ['y' => $m['y'], 't' => $m['t'], 'tag' => $m['tag'], 'd' => $m['d'], 'img' => sh_img($m['img'], 'sh-timeline')];
+        $timeline[] = ['y' => $m['y'], 't' => $m['t'], 'tag' => $m['tag'], 'd' => $m['d'], 'img' => sh_img($m['img'], 'sh-timeline'), 'thumb' => sh_img($m['img'], 'medium') ?: sh_img($m['img'], 'sh-timeline')];
     }
     $reels = [];
     foreach ((array) $s['playbook']['reels'] as $r) {
@@ -246,7 +263,7 @@ function sh_js_data() {
         ],
         'hero' => [
             'first_name' => $h['first_name'], 'last_name' => $h['last_name'], 'scroll_text' => $h['scroll_text'],
-            'logo_url' => sh_img($o['logo']), 'poster_url' => sh_img($h['poster']),
+            'logo_url' => sh_img($o['logo'], 'medium_large'), 'poster_url' => sh_img($h['poster']),
             'video_480' => sh_vid($h['video_480']), 'video_720' => sh_vid($h['video_720']), 'video_1080' => sh_vid($h['video_1080']),
             'clips' => sh_clip_lengths($h['clips']),
         ],
