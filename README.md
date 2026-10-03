@@ -2,7 +2,7 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.1.6** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.1.7** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 

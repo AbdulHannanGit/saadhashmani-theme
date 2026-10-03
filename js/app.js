@@ -1875,7 +1875,7 @@ class App {
         this.chatAttachment = null;
         return;
       }
-      attach.style.color = '';
+      attach.style.color = 'var(--glow,#f6f5f2)';
       const reader = new FileReader();
       reader.onload = () => {
         this.chatAttachment = { name: f.name, type: f.type, size: f.size, dataUrl: reader.result };
@@ -1934,7 +1934,7 @@ class App {
     this.chatInput.disabled = false;
     this.chatInput.value = '';
     const attach = this.sec7.querySelector('[data-chat-attach]');
-    if (attach) { attach.style.display = 'none'; attach.style.color = ''; }
+    if (attach) { attach.style.display = 'none'; attach.style.color = 'var(--glow,#f6f5f2)'; }
     this.renderChatLog();
     this.chatAsk(this.chatQ[0]);
   }
@@ -2446,7 +2446,10 @@ class App {
       a.addEventListener('mouseleave', () => { a.style.color = 'var(--tx-muted,#a1a1aa)'; });
       a.addEventListener('click', (e) => { e.preventDefault(); const g = +a.getAttribute('data-go'); this.setMenu(false); this.goToIndex(g, 1.2); });
     });
-    this.menu.querySelectorAll('[data-menu-close]').forEach(b => b.addEventListener('click', (e) => { e.preventDefault(); this.setMenu(false); }));
+    this.menu.querySelectorAll('[data-menu-close]').forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault(); this.setMenu(false);
+      if (b.getAttribute('href') === '#contact') this.scrollToLastSection(1.2);
+    }));
     this.onMenuKey = (e) => { if (e.key === 'Escape' && this.menuOpen) this.setMenu(false); };
     window.addEventListener('keydown', this.onMenuKey);
   }
