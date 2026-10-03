@@ -28,7 +28,7 @@ $v = $args;
 <div style="position: relative; width: min(1040px,92vw); aspect-ratio: 16/9; border: 1px solid var(--line,rgba(255,255,255,.08)); border-radius: 14px; overflow: hidden; box-shadow: 0 40px 90px rgba(0,0,0,.6); background: #000;">
 <img data-pod-poster="true" alt="" loading="lazy" decoding="async" fetchpriority="low" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;">
 <button data-pod-lightbox-play="true" type="button" aria-label="<?php echo esc_attr(__('Play video', 'saadhashmani')); ?>" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 74px; height: 74px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--glow,#f6f5f2); border-radius: 999px; background: rgba(3,4,5,.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer;"><svg width="26" height="26" viewBox="0 0 24 24" fill="var(--glow,#f6f5f2)"><path d="M8 5v14l11-7z"></path></svg></button>
-<iframe data-pod-frame="true" title="Podcast" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none;"></iframe>
+<iframe data-pod-frame="true" referrerpolicy="strict-origin-when-cross-origin" title="Podcast" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none;"></iframe>
 </div>
 </div>
 </section>
