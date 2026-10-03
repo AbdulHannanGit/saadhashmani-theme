@@ -486,6 +486,7 @@ function sh_defaults() {
             ],
         ],
         'receipts' => [
+            'show_cards' => true,
             'eyebrow' => 'Community Of Builders',
             'heading' => 'Word of Mouth',
             'stats' => [
@@ -655,8 +656,11 @@ function sh_defaults() {
             'location' => 'Houston, Texas · Access by request',
             'form_plugin' => '',
             'cf7_form_id' => 0,
+            'ff_form_id' => 0,
+            'fields' => ['name' => '', 'email' => '', 'message' => '', 'type' => '', 'attachment' => ''],
             'recaptcha_site' => '',
             'recaptcha_secret' => '',
+            'recaptcha_score' => 0.5,
             'form_types' => ['Business inquiry', 'Review', 'General query', 'Work with me'],
             'default_type' => 'General query',
             'social' => [

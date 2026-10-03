@@ -62,11 +62,7 @@ add_action('wp_enqueue_scripts', function () {
 
     wp_enqueue_script('sh-app', sh_script_url('app'), [], SH_VERSION, ['in_footer' => true, 'strategy' => 'defer']);
     wp_add_inline_script('sh-app', 'window.shTheme=' . wp_json_encode(sh_js_data()) . ';', 'before');
-
-    $rc = sh_get('contact.recaptcha_site');
-    if ($rc) {
-        wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . rawurlencode($rc), [], null, ['in_footer' => true, 'strategy' => 'defer']);
-    }
+    // reCAPTCHA is not enqueued: app.js loads it when the visitor starts the chat form.
 });
 
 /** style.css + mobile.css (inside its media query), comments and extra whitespace stripped. */
@@ -91,10 +87,11 @@ add_filter('style_loader_tag', function ($tag, $handle) {
     return $async . '<noscript>' . $tag . '</noscript>';
 }, 10, 2);
 
-// The theme's own contact form replaces Contact Form 7 on the front page: drop its CSS/JS there.
+// The chat form posts through the theme (which hands it to CF7 server-side), so Contact Form 7's own
+// CSS/JS and its site-wide reCAPTCHA script are not needed on the front page.
 add_action('wp_enqueue_scripts', function () {
     if (!is_front_page()) return;
-    foreach (['contact-form-7', 'swv'] as $h) { wp_dequeue_script($h); wp_dequeue_style($h); }
+    foreach (['contact-form-7', 'swv', 'wpcf7-recaptcha', 'google-recaptcha'] as $h) { wp_dequeue_script($h); wp_dequeue_style($h); }
 }, 100);
 
 add_action('wp_head', function () {

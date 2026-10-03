@@ -1880,7 +1880,12 @@ class App {
     this.chatLog = [];
     this.chatLogEl.addEventListener('click', (e) => {
       if (e.target.closest('[data-chat-restart-yes]')) this.chatRestart();
+      if (e.target.closest('[data-chat-retry]')) this.sendChatSubmission();
     });
+    this.chatHp = this.sec7.querySelector('[data-chat-hp]');
+    const warm = () => this.loadRecaptcha();
+    this.chatInput.addEventListener('focus', warm, { once: true });
+    this.chatInput.addEventListener('pointerdown', warm, { once: true });
     this.chatBuilt = true;
     this.chatAsk(this.chatQ[0]);
   }
@@ -1890,13 +1895,15 @@ class App {
     this.renderChatLog();
   }
 
+  escHtml(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
   renderChatLog() {
     if (!this.chatLogEl) return;
     const has = this.chatLog.length > 0;
     this.chatLogEl.style.display = has ? 'flex' : 'none';
     this.chatLogEl.innerHTML = this.chatLog.map((m) => {
       const isUser = m.role === 'user';
-      return '<div style="align-self:' + (isUser ? 'flex-end' : 'flex-start') + ';max-width:82%;padding:9px 14px;border-radius:14px;font-family:var(--font-body,sans-serif);font-size:13px;line-height:1.45;color:' + (isUser ? 'var(--ink-900,#030405)' : 'var(--tx,#f4f4f5)') + ';background:' + (isUser ? 'linear-gradient(150deg,var(--glow,#f6f5f2),var(--tx-faint,#6b6b73))' : 'rgba(255,255,255,.07)') + '">' + m.text + '</div>';
+      return '<div style="align-self:' + (isUser ? 'flex-end' : 'flex-start') + ';max-width:82%;padding:9px 14px;border-radius:14px;font-family:var(--font-body,sans-serif);font-size:13px;line-height:1.45;color:' + (isUser ? 'var(--ink-900,#030405)' : 'var(--tx,#f4f4f5)') + ';background:' + (isUser ? 'linear-gradient(150deg,var(--glow,#f6f5f2),var(--tx-faint,#6b6b73))' : 'rgba(255,255,255,.07)') + '">' + (m.html ? m.text : this.escHtml(m.text)) + '</div>';
     }).join('');
     this.chatLogEl.scrollTop = this.chatLogEl.scrollHeight;
   }
@@ -1958,43 +1965,83 @@ class App {
       const done = "Thanks, " + nm + ". Your " + this.chatType.toLowerCase() + " has been sent. We'll reply to " + em + " shortly.";
       this.chatAsk('');
       this.chatInput.disabled = true;
-      this.pushChat('assistant', done);
+      this.pushChat('assistant', 'Sending…');
       this.chatDone = true;
       this.setChatPlusMode('refresh');
-      this.saveSubmission();
+      this.sendChatSubmission(done);
     }
   }
 
   csvCell(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
 
-  saveSubmission() {
-    this.postSubmission();
+  // reCAPTCHA v3 script, loaded on first use of the chat form (keeps Google's ~150 KB off page load)
+  loadRecaptcha() {
+    const key = this.props.contact.recaptcha;
+    if (!key) return Promise.resolve(false);
+    if (!this._rcP) {
+      this._rcP = new Promise((res) => {
+        if (window.grecaptcha && window.grecaptcha.execute) return res(true);
+        const sc = document.createElement('script');
+        sc.src = 'https://www.google.com/recaptcha/api.js?render=' + encodeURIComponent(key);
+        sc.async = true;
+        sc.onload = () => res(true);
+        sc.onerror = () => { this._rcP = null; res(false); };
+        document.head.appendChild(sc);
+        setTimeout(() => res(!!window.grecaptcha), 8000);
+      });
+    }
+    return this._rcP;
+  }
+
+  recaptchaToken() {
+    const key = this.props.contact.recaptcha;
+    if (!key) return Promise.resolve('');
+    return this.loadRecaptcha().then((ok) => new Promise((res) => {
+      if (!ok || !window.grecaptcha) return res('');
+      const t = setTimeout(() => res(''), 8000);
+      window.grecaptcha.ready(() => window.grecaptcha.execute(key, { action: 'contact' }).then((tok) => { clearTimeout(t); res(tok || ''); }, () => { clearTimeout(t); res(''); }));
+    }));
+  }
+
+  // Sends the answers and shows the outcome in the last chat bubble: the thank-you line, or the form
+  // plugin's / server's error with a "Try again" button (which re-sends the same answers).
+  sendChatSubmission(doneText) {
+    if (doneText) this._chatDoneText = doneText;
+    if (this._chatSending) return;
+    this._chatSending = true;
+    const last = this.chatLog[this.chatLog.length - 1];
+    const show = (text, html) => { if (last) { last.text = text; last.html = !!html; this.renderChatLog(); } };
+    show('Sending…');
+    this.postSubmission().then((r) => {
+      this._chatSending = false;
+      if (r.ok) { show(this._chatDoneText); return; }
+      show(this.escHtml(r.message || 'Sorry, your message could not be sent.') +
+        ' <button type="button" data-chat-retry style="margin-left:6px;padding:3px 10px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:none;color:inherit;font:inherit;cursor:pointer">Try again</button>', true);
+    });
   }
 
   postSubmission() {
-    try {
-      const fd = new FormData();
-      fd.append('type', this.chatType || '');
-      fd.append('name', this.chatAnswers.name || '');
-      fd.append('email', this.chatAnswers.email || '');
-      fd.append('message', this.chatAnswers.message || '');
-      const att = this.chatAttachment;
-      const c = this.props.contact;
-      fd.append('action', 'sh_contact');
-      fd.append('nonce', c.nonce);
-      const post = () => fetch(c.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' }).catch(() => {});
-      const send = c.recaptcha && window.grecaptcha
-        ? () => window.grecaptcha.ready(() => window.grecaptcha.execute(c.recaptcha, { action: 'contact' }).then((token) => { fd.append('recaptcha_token', token); post(); }, post))
-        : post;
-      if (att && att.dataUrl) {
-        fetch(att.dataUrl).then((r) => r.blob()).then((blob) => {
-          fd.append('attachment', blob, att.name || 'attachment');
-          send();
-        }).catch(send);
-      } else {
-        send();
-      }
-    } catch (e) {}
+    const c = this.props.contact;
+    const fd = new FormData();
+    fd.append('action', 'sh_contact');
+    fd.append('nonce', c.nonce);
+    fd.append('type', this.chatType || '');
+    fd.append('name', this.chatAnswers.name || '');
+    fd.append('email', this.chatAnswers.email || '');
+    fd.append('message', this.chatAnswers.message || '');
+    fd.append('website', this.chatHp ? this.chatHp.value : '');
+    const att = this.chatAttachment;
+    const file = att && att.dataUrl
+      ? fetch(att.dataUrl).then((r) => r.blob()).then((blob) => { fd.append('attachment', blob, att.name || 'attachment'); }).catch(() => {})
+      : Promise.resolve();
+    const token = this.recaptchaToken().then((t) => { if (t) fd.append('recaptcha_token', t); });
+    return Promise.all([file, token])
+      .then(() => fetch(c.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' }))
+      .then((r) => r.json().catch(() => null).then((j) => ({
+        ok: !!(j && j.success),
+        message: (j && j.data && (j.data.error || j.data.message)) || (r.ok ? '' : 'Sorry, your message could not be sent (error ' + r.status + '). Please try again.'),
+      })))
+      .catch(() => ({ ok: false, message: "Couldn't reach the server. Check your connection and try again." }));
   }
 
   step3Q() {

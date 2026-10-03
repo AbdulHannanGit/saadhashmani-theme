@@ -190,6 +190,7 @@ function sh_view_data() {
         'podcast' => ['eyebrow' => $s['podcast']['eyebrow'], 'episodes' => $episodes, 'first' => $episodes[0] ?? ['t' => '', 'd' => '']],
         'receipts' => [
             'eyebrow' => $s['receipts']['eyebrow'], 'heading' => $s['receipts']['heading'],
+            'show_cards' => !empty($s['receipts']['show_cards']),
             'labels' => (array) $s['receipts']['filter_labels'],
             'stats_all' => array_values((array) ($s['receipts']['stats']['all'] ?? [])),
             'left' => array_map('sh_resolve_card', (array) $s['receipts']['testimonials_left']),
@@ -198,6 +199,7 @@ function sh_view_data() {
         'contact' => [
             'eyebrow' => $s['contact']['eyebrow'], 'heading' => $s['contact']['heading'], 'accent' => $s['contact']['heading_accent'],
             'description' => $s['contact']['description'], 'types' => $types, 'default_type' => $default_type,
+            'recaptcha' => function_exists('sh_recaptcha_keys') && sh_recaptcha_keys()['site'] !== '',
         ],
     ];
     return $v;
@@ -274,6 +276,7 @@ function sh_js_data() {
             'podcasts' => $pods,
             'receipts_stats' => (array) $s['receipts']['stats'],
         ],
-        'contact' => ['recaptcha_site' => $s['contact']['recaptcha_site']],
+        // public site key only (theme's, or the form plugin's); the secret never leaves the server
+        'contact' => ['recaptcha_site' => function_exists('sh_recaptcha_keys') ? sh_recaptcha_keys()['site'] : ''],
     ];
 }

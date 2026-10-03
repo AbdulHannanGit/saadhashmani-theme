@@ -23,6 +23,11 @@ $v = $args;
 <button data-chat-send="true" type="button" aria-label="<?php echo esc_attr(__('Send', 'saadhashmani')); ?>" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; padding: 0; border: none; border-radius: 999px; background: linear-gradient(150deg,var(--glow,#f6f5f2),var(--tx-faint,#6b6b73)); cursor: pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-900,#030405)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"></path></svg></button>
 <input data-chat-file="true" type="file" aria-hidden="true" tabindex="-1" accept="image/*,application/pdf" style="display: none;">
 </div>
+<input data-chat-hp="true" type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;">
+<?php if (!empty($v['contact']['recaptcha'])) : ?><p data-chat-legal="true" style="margin: 10px 0 0; text-align: center; font-family: var(--font-body,sans-serif); font-size: 11px; line-height: 1.4; color: var(--tx-faint,#6b6b73);"><?php
+/* translators: 1: Google privacy policy link, 2: Google terms link */
+printf(esc_html__('Protected by reCAPTCHA. Google %1$s and %2$s apply.', 'saadhashmani'), '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color: inherit; padding: 0;">' . esc_html__('Privacy Policy', 'saadhashmani') . '</a>', '<a href="https://policies.google.com/terms" target="_blank" rel="noopener" style="color: inherit; padding: 0;">' . esc_html__('Terms', 'saadhashmani') . '</a>');
+?></p><?php endif; ?>
 </div>
 <footer data-sec7-footer="true" style="position: absolute; left: 0; right: 0; bottom: clamp(20px,calc(3.4*var(--vh,1vh)),34px); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 18px clamp(24px,5vw,72px) 0; border-top: 1px solid var(--line,rgba(255,255,255,.08)); flex-wrap: wrap; pointer-events: auto;">
 <div><?php if ($v['logo']) : ?><img src="<?php echo esc_url($v['logo']); ?>"<?php echo $v['logo_srcset']; ?> alt="<?php echo esc_attr($v['name']); ?>" loading="lazy" decoding="async" fetchpriority="low" style="height: 47px; width: auto; display: block;"><?php endif; ?></div>
