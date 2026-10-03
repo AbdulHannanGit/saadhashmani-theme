@@ -4,7 +4,7 @@
  */
 defined('ABSPATH') || exit;
 
-define('SH_VERSION', '3.1.3');
+define('SH_VERSION', '3.1.4');
 define('SH_SCHEMA', 3);
 define('SH_DIR', get_template_directory());
 define('SH_URI', get_template_directory_uri());
