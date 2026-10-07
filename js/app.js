@@ -107,6 +107,20 @@ class App {
     this.wireSocialPopup();
     this.addHovers();
     this.loadDepsThenScroll();
+    this.openFromHash();
+  }
+
+  // Links from other pages (e.g. the 404 page) use /#contact: jump to the form once the intro has played.
+  openFromHash() {
+    if (window.location.hash !== '#contact') return;
+    const t0 = performance.now();
+    const tick = () => {
+      if (this.inputReady() && this.restStart && this.restStart.length >= this.N) {
+        try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+        this.scrollToLastSection(1.4);
+      } else if (performance.now() - t0 < 20000) setTimeout(tick, 150);
+    };
+    setTimeout(tick, 300);
   }
 
   isMobile() { return window.innerWidth <= 768; }

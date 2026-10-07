@@ -1,0 +1,57 @@
+/* 404 page: hero still, cinematic scrims, oversized outlined numerals. Loaded only on 404 responses. */
+body.error404{background:var(--ink-900,#0b0b0c);color:var(--tx,#f5f1ea)}
+.sh-404{position:relative;min-height:100vh;min-height:calc(100*var(--vh,1vh));display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;isolation:isolate;font-family:var(--font-body,sans-serif)}
+
+.sh-404__bg{position:absolute;inset:0;z-index:-1;background:var(--ink-900,#0b0b0c)}
+.sh-404__bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 42%;display:block;filter:saturate(.85) brightness(.82);transform:scale(1.06);animation:sh404-drift 26s cubic-bezier(.22,.61,.36,1) forwards}
+.sh-404__vignette{position:absolute;inset:0;background:radial-gradient(130% 120% at 50% 42%,rgba(11,11,12,.25) 0%,rgba(11,11,12,.5) 58%,rgba(11,11,12,.8) 100%)}
+.sh-404__scrim{position:absolute;inset:auto 0 0 0;height:72%;background:linear-gradient(to top,rgba(11,11,12,.96) 0%,rgba(11,11,12,.78) 34%,rgba(11,11,12,0) 100%)}
+.sh-404__grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.sh-404__top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(18px,3vw,34px) clamp(20px,5vw,72px)}
+.sh-404__brand{display:inline-flex;align-items:center;color:var(--tx,#f5f1ea);text-decoration:none;font-family:var(--font-grotesk,serif);font-size:20px}
+.sh-404__brand img{height:clamp(40px,5vw,56px);width:auto;display:block}
+.sh-404__code,.sh-404__eyebrow{font-family:var(--font-mono,sans-serif);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-faint,#978f84)}
+.sh-404__code{display:inline-flex;align-items:center;gap:10px}
+.sh-404__code::before{content:'';width:7px;height:7px;border-radius:50%;background:#e0938c;box-shadow:0 0 12px rgba(224,147,140,.7);animation:sh404-pulse 2.4s ease-in-out infinite}
+
+.sh-404__body{align-self:end;justify-self:center;width:100%;max-width:980px;padding:0 clamp(20px,5vw,72px) clamp(28px,calc(6*var(--vh,1vh)),72px);text-align:center}
+.sh-404__num{display:flex;justify-content:center;gap:.02em;margin:0 0 clamp(6px,calc(1.4*var(--vh,1vh)),18px);font-family:var(--font-grotesk,serif);font-weight:500;line-height:.8;letter-spacing:-.04em;font-size:clamp(7.5rem,26vw,19rem);color:transparent;-webkit-text-stroke:1px rgba(246,245,242,.55);user-select:none}
+.sh-404__num span{display:inline-block;opacity:0;transform:translateY(40px);animation:sh404-rise 1.1s cubic-bezier(.16,1,.3,1) forwards}
+.sh-404__num span:nth-child(2){animation-delay:.08s;color:var(--glow,#f6f5f2);-webkit-text-stroke:0;text-shadow:0 0 60px var(--glow-soft,rgba(246,245,242,.18))}
+.sh-404__num span:nth-child(3){animation-delay:.16s}
+.sh-404__eyebrow{margin:0 0 14px}
+.sh-404__title{margin:0 auto;max-width:18ch;font-family:var(--font-grotesk,serif);font-weight:500;font-size:clamp(1.9rem,4.4vw,3.4rem);line-height:1.04;letter-spacing:-.01em;color:var(--glow,#f6f5f2);text-wrap:balance}
+.sh-404__text{margin:16px auto 0;max-width:46ch;font-size:clamp(14px,1.2vw,16px);line-height:1.6;color:var(--tx-muted,#b0a89c);text-wrap:pretty}
+.sh-404__eyebrow,.sh-404__title,.sh-404__text,.sh-404__actions{opacity:0;transform:translateY(18px);animation:sh404-rise .9s cubic-bezier(.16,1,.3,1) forwards}
+.sh-404__eyebrow{animation-delay:.28s}.sh-404__title{animation-delay:.36s}.sh-404__text{animation-delay:.44s}.sh-404__actions{animation-delay:.52s}
+
+.sh-404__actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:clamp(22px,calc(3.4*var(--vh,1vh)),36px)}
+.sh-404__btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:14px 26px;border-radius:999px;font-family:var(--font-mono,sans-serif);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:transform .34s cubic-bezier(.16,1,.3,1),background .3s,color .3s,border-color .3s}
+.sh-404__btn--primary{color:var(--bg,#0b0b0c);background:var(--glow,#f6f5f2);box-shadow:0 10px 40px rgba(246,245,242,.12)}
+.sh-404__btn--primary:hover{transform:translateY(-2px)}
+.sh-404__btn--primary:hover svg{transform:translateX(-3px)}
+.sh-404__btn svg{transition:transform .34s cubic-bezier(.16,1,.3,1)}
+.sh-404__btn--ghost{color:var(--tx,#f5f1ea);border:1px solid var(--line-strong,rgba(255,255,255,.14));background:rgba(11,11,12,.32);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sh-404__btn:focus-visible,.sh-404 a:focus-visible{outline:2px solid var(--glow,#f6f5f2);outline-offset:3px}
+
+.sh-404__foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 clamp(20px,5vw,72px);padding:18px 0 clamp(18px,calc(3.4*var(--vh,1vh)),32px);border-top:1px solid var(--line,rgba(255,255,255,.08));font-family:var(--font-mono,sans-serif);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.sh-404__foot a{color:var(--tx-faint,#978f84);text-decoration:none;transition:color .3s}
+.sh-404__foot a:hover{color:var(--glow,#f6f5f2)}
+.sh-404__foot>a{text-transform:none;letter-spacing:.02em;font-size:13px}
+.sh-404__foot nav{display:flex;gap:18px}
+
+@keyframes sh404-rise{to{opacity:1;transform:none}}
+@keyframes sh404-drift{to{transform:scale(1)}}
+@keyframes sh404-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+@media (max-width:768px){
+  .sh-404__num{font-size:clamp(6.5rem,36vw,11rem)}
+  .sh-404__actions{flex-direction:column;align-items:stretch;max-width:340px;margin-left:auto;margin-right:auto}
+  .sh-404__foot{justify-content:center;text-align:center}
+}
+@media (max-height:620px){.sh-404__num{font-size:clamp(5rem,22vh,9rem)}}
+@media (prefers-reduced-motion:reduce){
+  .sh-404 *,.sh-404 *::before{animation:none!important}
+  .sh-404__num span,.sh-404__eyebrow,.sh-404__title,.sh-404__text,.sh-404__actions,.sh-404__bg img{opacity:1;transform:none}
+}

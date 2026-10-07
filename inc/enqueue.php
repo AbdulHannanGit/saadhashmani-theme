@@ -42,6 +42,7 @@ add_action('wp_enqueue_scripts', function () {
     } else {
         wp_enqueue_style('sh-style', get_stylesheet_uri(), [], SH_VERSION);
         wp_enqueue_style('sh-mobile', SH_URI . '/css/mobile.css', ['sh-style'], SH_VERSION, '(max-width:768px)');
+        if (is_404()) wp_enqueue_style('sh-404', SH_URI . '/css/404.css', ['sh-style'], SH_VERSION);
     }
 
     $css = '';
