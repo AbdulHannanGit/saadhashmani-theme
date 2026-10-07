@@ -101,3 +101,9 @@ add_action('wp_head', function () {
     ];
     echo '<script type="application/ld+json">' . wp_json_encode($graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
 }, 3);
+
+// Keep missing pages out of search results.
+add_filter('wp_robots', function ($robots) {
+    if (is_404()) $robots['noindex'] = true;
+    return $robots;
+});

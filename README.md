@@ -2,7 +2,7 @@
 
 Dark cinematic one-page portfolio. Seven sections sit on top of one looping background video; the visitor steps through them one at a time (scroll, swipe, keyboard, menu or the round scroll button) and each step plays a video transition. Includes a ventures carousel, a playbook wheel, a 3D podcast ring, testimonial columns and a chat-style contact form, with an optional GSAP motion layer.
 
-**Version 3.1.7** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
+**Version 3.2.0** — the new UI from the design build (`saadhashmani-theme-clone`), converted to WordPress with every word and image editable in the admin.
 
 ## Requirements
 
@@ -116,6 +116,7 @@ The reCAPTCHA script loads only when the visitor starts the form (not on page lo
 - Every image has `alt` text (names, titles; imported media get alt text from the manifest).
 - `<title>`, meta description, canonical, Open Graph and Twitter tags, `theme-color`.
 - JSON-LD `Person` (job title, image, email, locality, social `sameAs`, ventures as `founder` of `Organization`s) and `WebSite`.
+- Missing pages return a styled 404 (`404.php`, the Hero still image behind it) marked `noindex`. Its "Connect" button opens `/#contact`, which jumps to the contact form after the intro.
 - The theme's tags switch off automatically when Yoast, Rank Math, AIOSEO, SEOPress or The SEO Framework is active.
 
 ## Performance
@@ -143,7 +144,8 @@ saadhashmani-theme/
 ├── functions.php           Bootstrap (loads inc/)
 ├── header.php / footer.php Document shell
 ├── front-page.php          One-page layout: renders template-parts/ in order
-├── index.php               Fallback for posts, archives, 404
+├── 404.php                 Not-found page: hero still, way home, link to the contact form
+├── index.php               Fallback for posts and archives
 ├── template-parts/
 │   ├── site-header.php     Background stage, header, full-screen menu
 │   ├── hero.php            Hero title, scroll ring, preloader
@@ -167,7 +169,7 @@ saadhashmani-theme/
 │   ├── theme-settings.php  Admin page and save handler
 │   ├── admin-fields.php    Admin field renderers
 │   └── tab-*.php           Admin tabs
-├── css/  mobile.css, admin.css
+├── css/  mobile.css, admin.css, 404.css
 └── js/   app.js (+ .min), gsap-motion.js (+ .min), admin.js (+ .min), vendor/ (GSAP 3.13)
 ```
 
